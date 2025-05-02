@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<!--<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>-->
+		<Title>Zentient Templates MinimalAPI</Title>
+		<Copyright>Ulf Bourelius</Copyright>
+		<PackageProjectUrl>https://github.com/ulfbou/Zentient</PackageProjectUrl>
+		<RepositoryType>git</RepositoryType>
+		<!--<PackAsTool>True</PackAsTool>-->
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Azure.Identity" Version="1.13.2" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="8.1.2" />
+		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.4" />
+		<PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\MinimalAPI.Application\Zentient.Templates.MinimalAPI.Application.csproj" />
+		<ProjectReference Include="..\MinimalAPI.Common\Zentient.Templates.MinimalAPI.Common.csproj" />
+		<ProjectReference Include="..\MinimalAPI.Domain\Zentient.Templates.MinimalAPI.Domain.csproj" />
+	</ItemGroup>
+
+</Project>
