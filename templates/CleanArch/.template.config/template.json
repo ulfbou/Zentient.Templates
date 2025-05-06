@@ -1,0 +1,145 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Zentient",
+  "classifications": [ "Clean Architecture", "Solution", ".NET" ],
+  "identity": "Zentient.Templates.CleanSln.Minimal",
+  "name": "Clean Architecture Solution (Minimal)",
+  "shortName": "clean-sln",
+  "sourceName": "$solutionname$",
+  "preferNameDirectory": true,
+  "symbols": {
+    "solutionname": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "$solutionname$",
+      "defaultValue": "CleanSln.Minimal"
+    },
+    "domainProjGuid": {
+      "type": "generated",
+      "generator": "guid",
+      "replaces": "$domainProjGuid$"
+    },
+    "applicationProjGuid": {
+      "type": "generated",
+      "generator": "guid",
+      "replaces": "$applicationProjGuid$"
+    },
+    "apiProjGuid": {
+      "type": "generated",
+      "generator": "guid",
+      "replaces": "$apiProjGuid$"
+    },
+    "commonProjGuid": {
+      "type": "generated",
+      "generator": "guid",
+      "replaces": "$commonProjGuid$"
+    },
+    "domainTestProjGuid": {
+      "type": "generated",
+      "generator": "guid",
+      "replaces": "$domainTestProjGuid$"
+    },
+    "applicationTestProjGuid": {
+      "type": "generated",
+      "generator": "guid",
+      "replaces": "$applicationTestProjGuid$"
+    },
+    "apiTestProjGuid": {
+      "type": "generated",
+      "generator": "guid",
+      "replaces": "$apiTestProjGuid$"
+    }
+  },
+  "actions": [
+    {
+      "condition": "(!string.IsNullOrEmpty(solutionName))",
+      "script": "scripts/post_process_sln.sh",
+      "args": [
+        "{solutionName}.sln",
+        "{includePresentation}",
+        "{includeTests}"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "source": "./content",
+      "target": "./",
+      "include": [
+        "**/*"
+      ],
+      "exclude": [
+        "**/[Bb]in/**",
+        "**/[Oo]bj/**",
+        "**/*.user",
+        "**/*.lock.json",
+        "**/.vs/**"
+      ],
+      "modifiers": [
+        {
+          "condition": "true",
+          "rename": {
+            "Application": "$solutionname$.Application",
+            "Common": "$solutionname$.Common",
+            "Domain": "$solutionname$.Domain",
+            "Infrastructure": "$solutionname$.Infrastructure",
+            "WebApi": "$solutionname$.WebApi"
+          }
+        },
+        {
+          "condition": "(!includeTests)",
+          "exclude": [ "Tests/**" ]
+        },
+        {
+          "condition": "(includeTests)",
+          "rename": {
+            "WebApi.Tests.Integration": "$solutionname$.WebApi.Tests.Integration",
+            "Application.Tests.Units": "$solutionname$.Application.Tests.Units",
+            "Domain.Tests.Units": "$solutionname$.Domain.Tests.Units"
+          },
+          "include": [ "Tests/**" ]
+        }
+      ]
+    }
+  ],
+  "primaryOutputs": [
+    {
+      "path": "$solutionname$.sln"
+    }
+  ],
+  "postActions": [
+    {
+      "actionId": "3A7C4B45-1F5D-4A30-959A-51B88E82B5D2",
+      "description": "Test post-action execution",
+      "manualInstructions": [],
+      "executable": "echo",
+      "script": "Hello from post-action!",
+      "continueOnError": true
+    }
+    //,
+    //{
+    //  "actionId": "3A7C4B45-1F5D-4A30-959A-51B88E82B5D2",
+    //  "description": "Remove unselected project references from the solution file.",
+    //  "manualInstructions": [
+    //    {
+    //      "text": "If the solution file still references the excluded projects, run the following bash script:"
+    //    },
+    //    {
+    //      "text": "./scripts/post_process_sln.sh {solutionName}.sln {includePresentation} {includeTests}"
+    //    }
+    //  ],
+    //  "args": {
+    //    "solution_file": "{solutionName}.sln",
+    //    "includePresentation": "{includePresentation}",
+    //    "includeTests": "{includeTests}"
+    //  },
+    //  "executable": "bash",
+    //  "script": "./scripts/post_process_sln.sh",
+    //  "continueOnError": true
+    //}
+  ],
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  }
+}
