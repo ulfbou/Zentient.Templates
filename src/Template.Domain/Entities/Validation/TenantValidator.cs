@@ -17,5 +17,12 @@ namespace Template.Domain.Entities.Validation
                 throw new DomainValidationException("Tenant name cannot be null or empty.");
             }
         }
+
+        /// <inheritdoc />
+        public Task ValidateAsync(Tenant entity, CancellationToken cancellationToken = default)
+        {
+            Validate(entity);
+            return Task.CompletedTask;
+        }
     }
 }

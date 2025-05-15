@@ -40,5 +40,12 @@ namespace Template.Domain.Entities.Validation
                 throw new AggregateDomainValidationException("TenantUser validation failed.", errors);
             }
         }
+
+        /// <inheritdoc />
+        public Task ValidateAsync(TenantUser entity, CancellationToken cancellationToken = default)
+        {
+            Validate(entity);
+            return Task.CompletedTask;
+        }
     }
 }
