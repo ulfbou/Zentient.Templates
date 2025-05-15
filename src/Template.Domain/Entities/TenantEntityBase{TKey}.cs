@@ -1,8 +1,7 @@
 ﻿using Template.Domain.Contracts;
-using Template.Domain.Entities;
 using Template.Domain.ValueObjects;
 
-namespace Template.Domain.SeedWork
+namespace Template.Domain.Entities
 {
     /// <summary>
     /// Base class for all entities with a strongly-typed key and a tenant context.

@@ -4,7 +4,7 @@ using Template.Domain.Events;
 using Template.Domain.MultiTenancy;
 using Template.Domain.ValueObjects;
 
-namespace Template.Domain.SeedWork
+namespace Template.Domain.Entities
 {
     /// <summary>
     /// Base class for all entities with a strongly-typed key and a tenant context.
