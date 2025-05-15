@@ -12,12 +12,7 @@ namespace Template.Domain.Contracts.Events
         where TKey : struct, IIdentity<TKey>
     {
         /// <summary>
-        /// Gets the entity that was created.
-        /// </summary>
-        TEntity Entity { get; }
-
-        /// <summary>
-        /// Gets the ID of the entity that was created.
+        /// Gets the unique identifier of the entity that was created.
         /// </summary>
         TKey EntityId { get; }
     }

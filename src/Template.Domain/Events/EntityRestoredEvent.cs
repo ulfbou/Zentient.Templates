@@ -9,16 +9,17 @@ namespace Template.Domain.Events
     /// Represents a generic domain event that occurs when an entity is restored.
     /// </summary>
     /// <typeparam name="TKey">The type of the entity key.</typeparam>
-    public record EntityRestoredEvent<TKey>(Entity<TKey> Entity, DateTime OccurredOn) : IDomainEvent, IRestoredEvent<Entity<TKey>, TKey>
+    public record EntityRestoredEvent<TEntity, TKey>(TKey EntityId, DateTime OccurredOn) : IDomainEvent, IRestoredEvent<TEntity, TKey>
+        where TEntity : class, ISoftDelete, IEntity<TKey>
         where TKey : struct, IIdentity<TKey>
     {
-        /// <inheritdoc/>
-        public TKey EntityId => Entity.Id;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="EntityRestoredEvent{TKey}"/> record.
         /// </summary>
-        /// <param name="entity">The restored entity.</param>
-        public EntityRestoredEvent(Entity<TKey> entity) : this(entity, DateTime.UtcNow) { }
+        /// <param name="entityId">The unique identifier of the entity.</param>
+        public EntityRestoredEvent(TKey entityId) : this(entityId, DateTime.UtcNow)
+        {
+            EntityId = entityId;
+        }
     }
 }

@@ -8,15 +8,12 @@ namespace Template.Domain.Events
     /// <summary>
     /// Represents a domain event that occurs when a tenant is restored.
     /// </summary>
-    public record TenantRestoredEvent(Tenant Entity, DateTime OccurredOn) : IDomainEvent, IRestoredEvent<Tenant, TenantId>
+    public record TenantRestoredEvent(TenantId EntityId, DateTime OccurredOn) : IDomainEvent, IRestoredEvent<Tenant, TenantId>
     {
-        /// <inheritdoc/>
-        public TenantId EntityId => Entity.Id;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="TenantRestoredEvent"/> record.
         /// </summary>
-        /// <param name="tenant">The restored tenant entity.</param>
-        public TenantRestoredEvent(Tenant tenant) : this(tenant, DateTime.UtcNow) { }
+        /// <param name="entityId">The unique identifier of the restored tenant entity.</param>
+        public TenantRestoredEvent(TenantId entityId) : this(entityId, DateTime.UtcNow) { }
     }
 }

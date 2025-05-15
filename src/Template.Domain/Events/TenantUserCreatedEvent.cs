@@ -8,15 +8,12 @@ namespace Template.Domain.Events
     /// <summary>
     /// Represents a domain event that occurs when a tenant user is created.
     /// </summary>
-    public record TenantUserCreatedEvent(TenantUser Entity, DateTime OccurredOn) : IDomainEvent, IEntityCreatedEvent<TenantUser, UserId>
+    public record TenantUserCreatedEvent(UserId EntityId, DateTime OccurredOn) : IDomainEvent, IEntityCreatedEvent<TenantUser, UserId>
     {
-        /// <inheritdoc/>
-        public UserId EntityId => Entity.Id;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="TenantUserCreatedEvent"/> record.
         /// </summary>
-        /// <param name="entity">The created tenant user entity.</param>
-        public TenantUserCreatedEvent(TenantUser entity) : this(entity, DateTime.UtcNow) { }
+        /// <param name="entityId">The unique identifier of the tenant user.</param>
+        public TenantUserCreatedEvent(UserId entityId) : this(entityId, DateTime.UtcNow) { }
     }
 }
