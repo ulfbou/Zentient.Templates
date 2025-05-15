@@ -23,7 +23,7 @@ namespace Template.Domain.Entities.Validation
         /// <returns>A <see cref="IValidator{TEntity, TKey}"/> instance for the specified entity type.</returns>
         /// <exception cref="NotSupportedException">Thrown when the entity type is not supported.</exception>
         public static IValidator<TEntity, TKey> Create<TEntity, TKey>()
-            where TEntity : class, ITenantEntity<TKey>
+            where TEntity : class, IEntity<TKey>
             where TKey : struct, IIdentity<TKey>
         {
             if (_validators.TryGetValue(typeof(TEntity), out IValidator? validator))

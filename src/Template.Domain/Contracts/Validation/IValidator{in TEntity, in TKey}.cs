@@ -1,4 +1,5 @@
 ﻿using Template.Domain.Common.Exceptions;
+using Template.Domain.ValueObjects;
 
 namespace Template.Domain.Contracts.Validation
 {
@@ -7,6 +8,8 @@ namespace Template.Domain.Contracts.Validation
     /// </summary>
     /// <typeparam name="T">The type of object to validate.</typeparam>
     public interface IValidator<in TEntity, in TKey> : IValidator
+        where TEntity : class, IEntity<TKey>
+        where TKey : struct, IIdentity<TKey>
     {
         /// <summary>
         /// Validates the specified entity. 

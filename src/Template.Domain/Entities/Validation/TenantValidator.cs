@@ -4,9 +4,12 @@ using Template.Domain.ValueObjects;
 
 namespace Template.Domain.Entities.Validation
 {
-    // Dedicated Validator Classes
+    /// <summary>
+    /// Validator for the <see cref="Tenant"/> entity.
+    /// </summary>
     public class TenantValidator : IValidator<Tenant, TenantId>
     {
+        /// <inheritdoc />
         public void Validate(Tenant entity)
         {
             if (string.IsNullOrWhiteSpace(entity.Name))

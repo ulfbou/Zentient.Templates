@@ -6,8 +6,12 @@ using Template.Domain.ValueObjects;
 
 namespace Template.Domain.Entities.Validation
 {
+    /// <summary>
+    /// Validator for the <see cref="TenantUser"/> entity.
+    /// </summary>
     public class TenantUserValidator : IValidator<TenantUser, UserId>
     {
+        /// <inheritdoc />
         public void Validate(TenantUser entity)
         {
             var errors = new List<string>();
