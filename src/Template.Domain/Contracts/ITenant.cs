@@ -21,7 +21,11 @@ namespace Template.Domain.Contracts
         /// <summary>
         /// Updates the name of the tenant.
         /// </summary>
-        /// <param name="newName">The new name for the tenant.</param>
+        /// <param name="newName">The new name of the tenant.</param>
+        /// <remarks>
+        /// If the new name is the same as the current name or is <see langword="null"/> or empty, no action is taken.
+        /// The <see cref="TenantUpdatedEvent"/> is raised if the name is changed.
+        /// </remarks>
         void UpdateName(string newName);
     }
 }

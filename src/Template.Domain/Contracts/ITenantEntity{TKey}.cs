@@ -1,5 +1,4 @@
 ﻿using Template.Domain.Entities;
-using Template.Domain.MultiTenancy;
 using Template.Domain.ValueObjects;
 
 namespace Template.Domain.Contracts

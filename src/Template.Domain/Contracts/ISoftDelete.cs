@@ -23,6 +23,10 @@
         /// <summary>
         /// Restores the entity from a soft delete.
         /// </summary>
+        /// <remarks>
+        /// This method should be called to restore the entity after it has been marked as deleted.
+        /// An <see cref="IDomainEvent"/> is raised to indicate that the entity has been restored.
+        /// </remarks>
         void Restore();
     }
 }
