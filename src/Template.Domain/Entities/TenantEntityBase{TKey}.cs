@@ -26,6 +26,7 @@ namespace Template.Domain.Entities
         /// <param name="tenantId">The tenant identifier.</param>
         /// <param name="id">The entity identifier.</param>
         /// <param name="createdBy">The user who created the entity.</param>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="createdBy"/> is <see langword="null"/> or empty.</exception>
         protected TenantEntityBase(TenantId tenantId, TKey id, string createdBy) : base(id, createdBy)
         {
             TenantId = tenantId;
