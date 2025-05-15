@@ -15,18 +15,13 @@
         /// </summary>
         /// <param name="message">The error message that explains the reason for the exception.</param>
         /// <param name="errors">The collection of validation error messages.</param>
-        public AggregateDomainValidationException(string message, IEnumerable<string> errors)
-            : base(message)
-        {
-            Errors = errors?.ToList().AsReadOnly() ?? throw new ArgumentNullException(nameof(errors));
-            if (!Errors.Any())
-            {
-                throw new ArgumentException("Errors collection cannot be empty.", nameof(errors));
-            }
-        }
-
-        ///  <inheritdoc />
-        public AggregateDomainValidationException(string message, IEnumerable<string> errors, Exception innerException) : base(message, innerException)
+        /// <param name="innerException">
+        /// The exception that is the cause of the current exception, or a null reference if no inner exception is specified.
+        /// </param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="errors"/> collection is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the <paramref name="errors"/> collection is empty.</exception>
+        public AggregateDomainValidationException(string message, IEnumerable<string> errors, Exception? innerException = null)
+            : base(message, innerException)
         {
             Errors = errors?.ToList().AsReadOnly() ?? throw new ArgumentNullException(nameof(errors));
             if (!Errors.Any())
