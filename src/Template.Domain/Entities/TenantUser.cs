@@ -12,13 +12,29 @@ namespace Template.Domain.Entities
     /// </summary>
     public sealed class TenantUser : TenantEntity<UserId>
     {
-        /// <inheritdoc />
-        public string UserName { get; private set; }
+        private IValidator<TenantUser, UserId> _validator;
 
         /// <inheritdoc />
-        public string Email { get; private set; }
+        public string UserName
+        {
+            get => _userName;
+            private set
+            {
+                _userName = value;
+            }
+        }
+        private string _userName = string.Empty;
 
-        private readonly IValidator<TenantUser, UserId> _validator;
+        /// <inheritdoc />
+        public string Email
+        {
+            get => _email;
+            private set
+            {
+                _email = value;
+            }
+        }
+        private string _email = string.Empty;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TenantUser"/> class.
@@ -31,8 +47,8 @@ namespace Template.Domain.Entities
         /// <param name="validator">The validator for the tenant user.</param>
         private TenantUser(UserId id, TenantId tenantId, string userName, string email, string createdBy) : base(tenantId, id, createdBy)
         {
-            UserName = userName ?? throw new ArgumentNullException(nameof(userName));
-            Email = email ?? throw new ArgumentNullException(nameof(email));
+            UserName = !string.IsNullOrWhiteSpace(userName) ? userName : throw new ArgumentNullException(nameof(userName));
+            Email = !string.IsNullOrWhiteSpace(email) ? email : throw new ArgumentNullException(nameof(email));
             _validator = ValidatorFactory.Create<TenantUser, UserId>();
             _validator.Validate(this);
         }
@@ -56,6 +72,16 @@ namespace Template.Domain.Entities
         /// <returns>A new instance of the <see cref="TenantUser"/> class.</returns>
         public static TenantUser Create(TenantId tenantId, string userName, string email, string createdBy)
         {
+            if (string.IsNullOrWhiteSpace(userName))
+            {
+                throw new ArgumentNullException(nameof(userName));
+            }
+
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                throw new ArgumentNullException(nameof(email));
+            }
+
             var newUser = new TenantUser(UserId.New(), tenantId, userName, email, createdBy);
             newUser.RaiseEvent(new TenantUserCreatedEvent(newUser));
             return newUser;

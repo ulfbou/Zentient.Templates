@@ -1,6 +1,9 @@
 ﻿using System.Collections.Immutable;
 
+using Template.Domain.Common.Exceptions;
 using Template.Domain.Contracts;
+using Template.Domain.Contracts.Validation;
+using Template.Domain.Entities.Validation;
 using Template.Domain.Events;
 using Template.Domain.ValueObjects;
 
@@ -11,8 +14,18 @@ namespace Template.Domain.Entities
     /// </summary>
     public sealed class Tenant : AggregateRoot<TenantId>, ITenant
     {
+        private readonly IValidator<Tenant, TenantId> _validator;
+
         /// <inheritdoc />
-        public string Name { get; private set; }
+        public string Name
+        {
+            get => _name;
+            private set
+            {
+                _name = value;
+            }
+        }
+        private string _name = string.Empty;
 
         /// <inheritdoc />
         public IReadOnlyDictionary<string, string> Metadata { get; private set; }
@@ -27,13 +40,10 @@ namespace Template.Domain.Entities
         /// <exception cref="ArgumentException">Thrown when the <paramref name="name"/> or <paramref name="createdBy"/> is <see langword="null"/> or empty.</exception>
         private Tenant(TenantId id, string name, string createdBy, Dictionary<string, string> metadata) : base(id, createdBy)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException("Tenant name cannot be null or empty.", nameof(name));
-            }
-
-            Name = name;
+            Name = !string.IsNullOrWhiteSpace(name) ? name : throw new ArgumentNullException(nameof(name));
             Metadata = metadata.ToImmutableDictionary();
+            _validator = ValidatorFactory.Create<Tenant, TenantId>();
+            _validator.Validate(this);
         }
 
         /// <summary>
@@ -57,11 +67,6 @@ namespace Template.Domain.Entities
         /// </remarks>
         public static Tenant Create(string name, string createdBy, Dictionary<string, string>? metadata = null)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException("Tenant name cannot be null or empty.", nameof(name));
-            }
-
             var tenant = new Tenant(TenantId.New(), name, createdBy, metadata ?? new Dictionary<string, string>());
             tenant.RaiseEvent(new TenantCreatedEvent(tenant));
             return tenant;
@@ -70,13 +75,10 @@ namespace Template.Domain.Entities
         /// <inheritdoc />
         public void UpdateName(string newName)
         {
-            if (string.IsNullOrWhiteSpace(newName) || newName == Name)
-            {
-                return;
-            }
-
+            if (newName == Name) return;
             string previousName = Name;
             Name = newName;
+            _validator.Validate(this);
             RaiseEvent(new TenantUpdatedEvent(this));
         }
 
