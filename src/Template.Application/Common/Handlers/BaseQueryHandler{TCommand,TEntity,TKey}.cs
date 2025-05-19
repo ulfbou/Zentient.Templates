@@ -11,79 +11,113 @@ using Template.Application.Common.Results;
 using Template.Domain.Common.Result;
 using Template.Domain.Contracts;
 using Template.Domain.ValueObjects;
+using System.Diagnostics;
+using AutoMapper;
 
 namespace Template.Application.Common.Handlers
 {
     /// <summary>
-    ///     Abstract base class for query handlers.
+    /// Base class for executing queries with structured diagnostics and tenant/user context awareness.
     /// </summary>
-    /// <typeparam name="TQuery">The type of the query.</typeparam>
-    /// <typeparam name="TResult">The type of the result (DTO).</typeparam>
-    /// <typeparam name="TEntity">The type of the entity.</typeparam>
-    /// <typeparam name="TKey">The type of the entity's ID.</typeparam>
-    public abstract class BaseQueryHandler<TQuery, TResult, TEntity, TKey> : IRequestHandler<TQuery, IResult<TResult>>
-        where TQuery : IRequest<IResult<TResult>>
+    /// <typeparam name="TQuery">The query request type implementing <see cref="IRequest{TResult}"/>.</typeparam>
+    /// <typeparam name="TResult">The result type implementing <see cref="IResult"/>.</typeparam>
+    public abstract class BaseQueryHandler<TQuery, TResult, TEntity, TKey> : IRequestHandler<TQuery, TResult>
+        where TQuery : IRequest<TResult>
+        where TResult : IResult
         where TEntity : class, IEntity<TKey>
         where TKey : struct, IIdentity<TKey>
     {
-        protected readonly IQueryContext<TEntity, TKey> _context;
-        protected readonly ILogger<BaseQueryHandler<TQuery, TResult, TEntity, TKey>> _logger;
+        #region Dependencies
 
+        protected readonly IQueryContext<TEntity, TKey> _context;
+        protected readonly IUserContext _userContext;
+        protected readonly ILogger _logger;
+        protected readonly IMapper _mapper;
+        protected readonly ActivitySource _activitySource;
+
+        #endregion
+
+        #region Constructor
+
+        /// <summary>
+        /// Initializes the query handler with required services.
+        /// </summary>
         protected BaseQueryHandler(
             IQueryContext<TEntity, TKey> context,
-            ILogger<BaseQueryHandler<TQuery, TResult, TEntity, TKey>> logger)
+            IUserContext userContext,
+            ILogger<BaseQueryHandler<TQuery, TResult, TEntity, TKey>> logger,
+            IMapper mapper,
+            ActivitySource? activitySource = null)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _context = context;
+            _userContext = userContext;
+            _logger = logger;
+            _mapper = mapper;
+            _activitySource = activitySource ?? new ActivitySource("Template.Application");
         }
 
-        public async Task<IResult<TResult>> Handle(TQuery query, CancellationToken cancellationToken)
+        #endregion
+
+        #region Handler
+
+        public async Task<TResult> Handle(TQuery query, CancellationToken ct)
         {
+            using var activity = _activitySource.StartActivity(typeof(TQuery).Name);
+            if (activity != null)
+            {
+                activity.AddTag("query.name", typeof(TQuery).Name);
+                activity.AddTag("handler", GetType().Name);
+                // activity.AddTag("user.id", _userContext.UserId.ToString());
+                // activity.AddTag("tenant.id", _userContext.TenantId.ToString());
+            }
+
             try
             {
-                var validationResult = await ValidateQuery(query, cancellationToken);
+                activity?.AddEvent(new ActivityEvent("QueryExecutionStarted", tags: new ActivityTagsCollection
+            {
+                { "query.type", typeof(TQuery).Name }
+            }));
 
-                if (validationResult.IsFailure)
+                var result = await ExecuteQuery(query, ct);
+
+                if (result.IsFailure)
                 {
-                    return (IResult<TResult>)(validationResult.Error is not null
-                        ? validationResult
-                        : Result.Failure<TResult>(default!, "Query Validation Failed"));
+                    activity?.SetStatus(ActivityStatusCode.Error, result.Error);
+                    activity?.AddEvent(new ActivityEvent("QueryExecutionFailed", tags: new ActivityTagsCollection
+                {
+                    { "error.message", result.Error }
+                }));
+                }
+                else
+                {
+                    activity?.SetStatus(ActivityStatusCode.Ok);
+                    activity?.AddEvent(new ActivityEvent("QueryExecutionSucceeded"));
                 }
 
-                return await FetchEntity(query, cancellationToken);
+                return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error handling query {QueryName} for entity {EntityName}",
-                    typeof(TQuery).Name, typeof(TEntity).Name);
-                return Result.Failure<TResult>(default, $"Error processing query: {ex.Message}");
+                _logger.LogError(ex, "Unhandled exception in query handler: {Query}", typeof(TQuery).Name);
+                activity?.SetStatus(ActivityStatusCode.Error, "Unhandled exception");
+                activity?.AddEvent(new ActivityEvent("QueryExecutionError", tags: new ActivityTagsCollection
+            {
+                { "error.message", ex.Message },
+                { "error.type", ex.GetType().Name }
+            }));
+                return (TResult)Result.Failure($"Unexpected error: {ex.Message}");
             }
         }
 
-        /// <summary>
-        ///     Performs query-specific validation.
-        /// </summary>
-        /// <param name="query">The query to validate.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>A task that represents the asynchronous operation. The task result contains a Result indicating success or failure.</returns>
-        protected virtual Task<IResult> ValidateQuery(TQuery query, CancellationToken cancellationToken)
-        {
-            return Task.FromResult(Result.Success());
-        }
+        #endregion
+
+        #region Overridables
 
         /// <summary>
-        ///     Fetches the entity from the data source.
+        /// Override to implement the actual query execution logic.
         /// </summary>
-        /// <param name="query">The query.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>The fetched entity, or null if not found.</returns>
-        protected abstract Task<IResult<TResult>> FetchEntity(TQuery query, CancellationToken cancellationToken);
+        protected abstract Task<TResult> ExecuteQuery(TQuery query, CancellationToken ct);
 
-        /// <summary>
-        ///     Maps the entity to the result DTO.
-        /// </summary>
-        /// <param name="entity">The entity to map.</param>
-        /// <returns>The result DTO.</returns>
-        protected abstract TResult MapToResult(TEntity entity);
+        #endregion
     }
 }

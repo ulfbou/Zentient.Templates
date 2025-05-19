@@ -24,11 +24,11 @@ namespace Template.Application.Common.Handlers
         where TKey : struct, IIdentity<TKey>
     {
         protected readonly IQueryContext<TEntity, TKey> _context;
-        protected readonly ILogger<PagedQueryHandler<TQuery, TResult, TEntity, TKey>> _logger;
+        protected readonly ILogger _logger;
 
         protected PagedQueryHandler(
             IQueryContext<TEntity, TKey> context,
-            ILogger<PagedQueryHandler<TQuery, TResult, TEntity, TKey>> logger)
+            ILogger logger)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -77,13 +77,6 @@ namespace Template.Application.Common.Handlers
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The fetched entities and the total count.</returns>
         protected abstract Task<IResult<PaginatedList<TResult>>> FetchEntities(TQuery query, CancellationToken cancellationToken);
-
-        /// <summary>
-        ///     Maps the entity to the result DTO.
-        /// </summary>
-        /// <param name="entity">The entity to map.</param>
-        /// <returns>The result DTO.</returns>
-        protected abstract TResult MapToResult(TEntity entity);
 
         /// <summary>
         /// Gets the page number from the query
