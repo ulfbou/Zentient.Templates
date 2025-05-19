@@ -1,4 +1,5 @@
-﻿using Template.Domain.Entities;
+﻿using Template.Domain.Common.Result;
+using Template.Domain.Entities;
 using Template.Domain.ValueObjects;
 
 namespace Template.Domain.Contracts
@@ -17,6 +18,7 @@ namespace Template.Domain.Contracts
         /// Gets the metadata associated with the tenant.
         /// </summary>
         IReadOnlyDictionary<string, string> Metadata { get; }
+        TenantStatus Status { get; }
 
         /// <summary>
         /// Updates the name of the tenant.
@@ -27,5 +29,12 @@ namespace Template.Domain.Contracts
         /// The <see cref="TenantUpdatedEvent"/> is raised if the name is changed.
         /// </remarks>
         void UpdateName(string newName);
+
+        /// <summary>
+        /// Updates the metadata of the tenant.
+        /// </summary>
+        /// <param name="newMetadata">The new metadata to be associated with the tenant.</param>
+        /// <param name="modifiedBy">The user who modified the metadata.</param>
+        void UpdateMetadata(Dictionary<string, string>? newMetadata, UserId modifiedBy);
     }
 }

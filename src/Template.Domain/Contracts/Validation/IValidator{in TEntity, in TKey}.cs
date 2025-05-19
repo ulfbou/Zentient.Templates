@@ -8,7 +8,7 @@ namespace Template.Domain.Contracts.Validation
     /// Defines a contract for validating an object.
     /// </summary>
     /// <typeparam name="T">The type of object to validate.</typeparam>
-    public interface IValidator<in TEntity, in TKey> : IValidator
+    public interface IValidator<TEntity, TKey> : IValidator
         where TEntity : class, IEntity<TKey>
         where TKey : struct, IIdentity<TKey>
     {
@@ -24,10 +24,6 @@ namespace Template.Domain.Contracts.Validation
         /// </summary>
         /// <param name="entity">The entity to validate.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        public Task ValidateAsync(TEntity entity, CancellationToken cancellationToken = default)
-        {
-            Validate(entity);
-            return Task.CompletedTask;
-        }
+        public Task ValidateAsync(TEntity entity, CancellationToken cancellationToken = default);
     }
 }

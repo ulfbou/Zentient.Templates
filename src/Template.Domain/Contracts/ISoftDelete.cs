@@ -1,4 +1,6 @@
-﻿namespace Template.Domain.Contracts
+﻿using Template.Domain.ValueObjects;
+
+namespace Template.Domain.Contracts
 {
     /// <summary>
     /// Interface for entities that support soft deletion.
@@ -18,7 +20,7 @@
         /// <summary>
         /// Marks the entity as deleted.
         /// </summary>
-        void MarkDeleted();
+        void MarkDeleted(string userId);
 
         /// <summary>
         /// Restores the entity from a soft delete.
@@ -27,6 +29,6 @@
         /// This method should be called to restore the entity after it has been marked as deleted.
         /// An <see cref="IDomainEvent"/> is raised to indicate that the entity has been restored.
         /// </remarks>
-        void Restore();
+        void Restore(string userId);
     }
 }
