@@ -12,9 +12,9 @@ namespace Template.Domain.ValueObjects
     /// Represents a generic Guid-based value object.  This provides
     /// common functionality for all Guid-based identifiers.
     /// </summary>
-    /// <typeparam name="T">The specific type of the value object (e.g., UserId, TenantId).</typeparam>
-    public readonly struct GuidValue<T> : IEquatable<GuidValue<T>>
-        where T : struct, IIdentity<T> // Constraint to IIdentity
+    /// <typeparam name="TValue">The specific type of the value object (e.g., UserId, TenantId).</typeparam>
+    public readonly struct GuidValue<TValue> : IEquatable<GuidValue<TValue>>
+        where TValue : struct, IIdentity<TValue>
     {
         public Guid Value { get; }
 
@@ -26,28 +26,36 @@ namespace Template.Domain.ValueObjects
         {
             if (value == Guid.Empty)
             {
-                throw new ArgumentException($"ID of type {typeof(T).Name} cannot be empty.");
+                throw new ArgumentException($"ID of type {typeof(TValue).Name} cannot be empty.");
             }
+
             Value = value;
         }
 
         /// <summary>
+        /// Creates a new instance of <typeparamref name="TValue"/> with a new <see cref="Guid"/> value.
+        /// </summary>
+        /// <returns>A new instance of <typeparamref name="TValue"/>.</returns>
+        public static GuidValue<TValue> New() => new(Guid.NewGuid());
+
+        /// <summary>
         /// Implicitly converts a Guid to a GuidValue.
         /// </summary>
+        /// <typeparam name="TValue">The specific type of the value object (e.g., UserId, TenantId).</typeparam>
         /// <param name="value">The Guid value.</param>
-        public static implicit operator GuidValue<T>(Guid value) => new(value);
+        public static implicit operator GuidValue<TValue>(Guid value) => new(value);
 
         /// <summary>
         /// Implicitly converts a GuidValue to a Guid.
         /// </summary>
         /// <param name="valueObject">The GuidValue.</param>
-        public static implicit operator Guid(GuidValue<T> valueObject) => valueObject.Value;
+        public static implicit operator Guid(GuidValue<TValue> valueObject) => valueObject.Value;
 
         /// <inheritdoc />
-        public bool Equals(GuidValue<T> other) => Value.Equals(other.Value);
+        public bool Equals(GuidValue<TValue> other) => Value.Equals(other.Value);
 
         /// <inheritdoc />
-        public override bool Equals(object? obj) => obj is GuidValue<T> other && Equals(other);
+        public override bool Equals(object? obj) => obj is GuidValue<TValue> other && Equals(other);
 
         /// <inheritdoc />
         public override int GetHashCode() => Value.GetHashCode();
@@ -69,7 +77,7 @@ namespace Template.Domain.ValueObjects
             return Value.ToString(format);
         }
 
-        public static bool operator ==(GuidValue<T> left, GuidValue<T> right) => left.Equals(right);
-        public static bool operator !=(GuidValue<T> left, GuidValue<T> right) => !(left == right);
+        public static bool operator ==(GuidValue<TValue> left, GuidValue<TValue> right) => left.Equals(right);
+        public static bool operator !=(GuidValue<TValue> left, GuidValue<TValue> right) => !(left == right);
     }
 }
