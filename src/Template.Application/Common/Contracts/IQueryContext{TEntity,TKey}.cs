@@ -7,6 +7,6 @@ namespace Template.Application.Common.Contracts
         where TEntity : class, IEntity<TKey>
         where TKey : struct, IIdentity<TKey>
     {
-        IQueryable<TEntity> Query(bool asNoTracking = false, bool noCache = false, bool isSoftDelete = true);
+        IQueryable<TEntity> Query(bool asNoTracking = true, bool noCache = false, bool getSoftDelete = false);
     }
 }

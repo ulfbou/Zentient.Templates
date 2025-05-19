@@ -1,4 +1,7 @@
-﻿using Template.Domain.Common.Result;
+﻿using MediatR;
+
+using Template.Application.Features.Tenants.Commands;
+using Template.Domain.Common.Result;
 using Template.Domain.Contracts;
 using Template.Domain.ValueObjects;
 
@@ -9,8 +12,9 @@ namespace Template.Application.Common.Contracts
         where TKey : struct, IIdentity<TKey>
     {
         Task<IResult<TEntity>> AddAsync(TEntity entity, CancellationToken ct);
-        Task UpdateAsync(TEntity entity, CancellationToken ct);
-        Task RemoveAsync(TEntity entity, CancellationToken ct);
-        Task<TEntity?> GetByIdAsync(TKey key, CancellationToken ct);
+        Task<IResult> UpdateAsync(TEntity entity, CancellationToken ct);
+        Task<IResult> RemoveAsync(TEntity entity, CancellationToken ct);
+        Task<IResult<TEntity>> GetByIdAsync(TKey key, CancellationToken ct);
+        Task<IResult> ExistsByNameAsync(string name, CancellationToken none);
     }
 }
