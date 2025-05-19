@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-using Template.Domain.Contracts.Validation;
+﻿using Template.Domain.Contracts.Validation;
 using Template.Domain.Entities.Validation;
 using Template.Domain.Events;
 using Template.Domain.ValueObjects;
@@ -70,7 +68,7 @@ namespace Template.Domain.Entities
         /// <param name="createdBy">The user who created the tenant user.</param>
         /// <param name="validator">The validator for the tenant user.</param>
         /// <returns>A new instance of the <see cref="TenantUser"/> class.</returns>
-        public static TenantUser Create(TenantId tenantId, string userName, string email, string createdBy)
+        public static TenantUser Create(TenantId tenantId, string userName, string email, string passwordHash, string initialRole, string createdBy)
         {
             if (string.IsNullOrWhiteSpace(userName))
             {
@@ -82,8 +80,8 @@ namespace Template.Domain.Entities
                 throw new ArgumentNullException(nameof(email));
             }
 
-            var newUser = new TenantUser(UserId.New(), tenantId, userName, email, createdBy);
-            newUser.RaiseEvent(new TenantUserCreatedEvent(newUser));
+            TenantUser newUser = new TenantUser(UserId.New(), tenantId, userName, email, createdBy);
+            newUser.RaiseEvent(new TenantUserCreatedEvent(newUser.Id));
             return newUser;
         }
 
@@ -99,7 +97,7 @@ namespace Template.Domain.Entities
             UserName = userName;
             _validator.Validate(this);
             MarkModified(modifiedBy);
-            RaiseEvent(new TenantUserChangedNameEvent(this, UserName, oldUserName));
+            RaiseEvent(new TenantUserChangedNameEvent(Id, UserName, oldUserName));
         }
 
         /// <inheritdoc />
@@ -110,26 +108,30 @@ namespace Template.Domain.Entities
             Email = email;
             _validator.Validate(this);
             MarkModified(modifiedBy);
-            RaiseEvent(new TenantUserChangedEmailEvent(this, Email, oldEmail));
+            RaiseEvent(new TenantUserChangedEmailEvent(Id, Email, oldEmail));
         }
 
-        public override void MarkDeleted()
+        public override void MarkDeleted(string userId)
         {
             if (!IsDeleted)
             {
                 IsDeleted = true;
-                DeletedOn = DateTime.UtcNow;
-                RaiseEvent(new TenantUserDeletedEvent(this));
+                ModifiedBy = userId;
+                ModifiedOn = DateTime.UtcNow;
+                DeletedOn = ModifiedOn;
+                RaiseEvent(new TenantUserDeletedEvent(Id));
             }
         }
 
-        public override void Restore()
+        public override void Restore(string userId)
         {
             if (IsDeleted)
             {
                 IsDeleted = false;
+                ModifiedBy = userId;
+                ModifiedOn = DateTime.UtcNow;
                 DeletedOn = null;
-                RaiseEvent(new TenantUserRestoredEvent(this));
+                RaiseEvent(new TenantUserRestoredEvent(Id));
             }
         }
     }

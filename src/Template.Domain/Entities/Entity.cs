@@ -75,25 +75,26 @@ namespace Template.Domain.Entities
         }
 
         /// <inheritdoc />
-        public virtual void MarkDeleted()
+        public virtual void MarkDeleted(string userId)
         {
-            if (!IsDeleted)
-            {
-                IsDeleted = true;
-                DeletedOn = DateTime.UtcNow;
-                RaiseEvent(new EntitySoftDeletedEvent<TKey>(this, DeletedOn.Value));
-            }
+            if (IsDeleted) return;
+            IsDeleted = true;
+            DeletedOn = DateTime.UtcNow;
+            ModifiedBy = userId;
+            ModifiedOn = DeletedOn;
+            RaiseEvent(new EntitySoftDeletedEvent<Entity<TKey>, TKey>(Id));
         }
 
         /// <inheritdoc />
-        public virtual void Restore()
+        public virtual void Restore(string userId)
         {
             if (IsDeleted)
             {
                 IsDeleted = false;
-                var restoredOn = DateTime.UtcNow;
+                ModifiedBy = userId;
+                ModifiedOn = DateTime.UtcNow;
                 DeletedOn = null;
-                RaiseEvent(new EntityRestoredEvent<TKey>(this, restoredOn));
+                RaiseEvent(new EntityRestoredEvent<Entity<TKey>, TKey>(Id));
             }
         }
     }

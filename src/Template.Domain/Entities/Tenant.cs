@@ -1,8 +1,8 @@
 ﻿using System.Collections.Immutable;
 
-using Template.Domain.Common.Exceptions;
-using Template.Domain.Contracts;
+using Template.Domain.Common.Result;
 using Template.Domain.Contracts.Validation;
+using Template.Domain.Contracts;
 using Template.Domain.Entities.Validation;
 using Template.Domain.Events;
 using Template.Domain.ValueObjects;
@@ -26,6 +26,17 @@ namespace Template.Domain.Entities
             }
         }
         private string _name = string.Empty;
+
+        /// <inheritdoc />
+        public TenantStatus Status
+        {
+            get => _status;
+            private set
+            {
+                _status = value;
+            }
+        }
+        private TenantStatus _status = TenantStatus.Inactive;
 
         /// <inheritdoc />
         public IReadOnlyDictionary<string, string> Metadata { get; private set; }
@@ -68,7 +79,7 @@ namespace Template.Domain.Entities
         public static Tenant Create(string name, string createdBy, Dictionary<string, string>? metadata = null)
         {
             var tenant = new Tenant(TenantId.New(), name, createdBy, metadata ?? new Dictionary<string, string>());
-            tenant.RaiseEvent(new TenantCreatedEvent(tenant));
+            tenant.RaiseEvent(new TenantCreatedEvent(tenant.Id));
             return tenant;
         }
 
@@ -79,28 +90,71 @@ namespace Template.Domain.Entities
             string previousName = Name;
             Name = newName;
             _validator.Validate(this);
-            RaiseEvent(new TenantUpdatedEvent(this));
+            RaiseEvent(new TenantUpdatedEvent(Id));
         }
 
         /// <inheritdoc />
-        public override void MarkDeleted()
+        public void UpdateMetadata(Dictionary<string, string>? newMetadata, UserId modifiedBy)
         {
-            if (!IsDeleted)
+            if (newMetadata == null)
             {
-                IsDeleted = true;
-                DeletedOn = DateTime.UtcNow;
-                RaiseEvent(new TenantDeletedEvent(this));
+                newMetadata = new Dictionary<string, string>();
+            }
+
+            // Determine if there is a change.
+            bool hasChanged = Metadata == null ||
+                              newMetadata.Count != Metadata.Count ||
+                              !newMetadata.All(kvp => Metadata.ContainsKey(kvp.Key) && Metadata[kvp.Key] == kvp.Value);
+
+
+            if (hasChanged)
+            {
+                Metadata = newMetadata.ToImmutableDictionary();
+                ModifiedBy = modifiedBy;
+                ModifiedOn = DateTime.UtcNow;
+                RaiseEvent(new TenantMetadataUpdatedEvent(Id, Metadata));
             }
         }
 
         /// <inheritdoc />
-        public override void Restore()
+        public override void MarkDeleted(string userId)
+        {
+            if (!IsDeleted)
+            {
+                IsDeleted = true;
+                ModifiedBy = userId;
+                DeletedOn = DateTime.UtcNow;
+                ModifiedOn = DeletedOn;
+                Status = TenantStatus.Deleted;
+                RaiseEvent(new TenantDeletedEvent(Id));
+            }
+        }
+
+        /// <inheritdoc />
+        public override void Restore(string userId)
         {
             if (IsDeleted)
             {
                 IsDeleted = false;
+                ModifiedBy = userId;
+                ModifiedOn = DateTime.UtcNow;
                 DeletedOn = null;
-                RaiseEvent(new TenantRestoredEvent(this));
+                Status = TenantStatus.Active;
+                RaiseEvent(new TenantRestoredEvent(Id));
+            }
+        }
+
+        public void UpdateStatus(TenantStatus value, UserId userId)
+        {
+            if (!IsDeleted)
+            {
+                if (value != Status && value != TenantStatus.Deleted)
+                {
+                    Status = value;
+                    ModifiedBy = userId;
+                    ModifiedOn = DateTime.UtcNow;
+                    RaiseEvent(new TenantStatusUpdatedEvent(Id, Status));
+                }
             }
         }
     }
