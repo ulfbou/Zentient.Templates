@@ -17,11 +17,11 @@ using AutoMapper;
 namespace Template.Application.Common.Handlers
 {
     /// <summary>
-    /// Base class for executing queries with structured diagnostics and tenant/user context awareness.
+    /// Base class for executing queries with only business logic. 
+    /// All cross-cutting concerns are handled by the pipeline.
     /// </summary>
-    /// <typeparam name="TQuery">The query request type implementing <see cref="IRequest{TResult}"/>.</typeparam>
-    /// <typeparam name="TResult">The result type implementing <see cref="IResult"/>.</typeparam>
-    public abstract class BaseQueryHandler<TQuery, TResult, TEntity, TKey> : IRequestHandler<TQuery, TResult>
+    public abstract class BaseQueryHandler<TQuery, TResult, TEntity, TKey>
+        : BaseHandler<TQuery, TResult>
         where TQuery : IRequest<TResult>
         where TResult : IResult
         where TEntity : class, IEntity<TKey>
@@ -29,11 +29,8 @@ namespace Template.Application.Common.Handlers
     {
         #region Dependencies
 
-        protected readonly IQueryContext<TEntity, TKey> _context;
-        protected readonly IUserContext _userContext;
-        protected readonly ILogger _logger;
+        protected readonly IQueryContext<TEntity, TKey> _queryContext;
         protected readonly IMapper _mapper;
-        protected readonly ActivitySource _activitySource;
 
         #endregion
 
@@ -42,76 +39,63 @@ namespace Template.Application.Common.Handlers
         /// <summary>
         /// Initializes the query handler with required services.
         /// </summary>
+        /// <param name="queryContext">The query context.</param>
+        /// <param name="userContext">The user context.</param>
         protected BaseQueryHandler(
-            IQueryContext<TEntity, TKey> context,
+            IQueryContext<TEntity, TKey> queryContext,
             IUserContext userContext,
-            ILogger<BaseQueryHandler<TQuery, TResult, TEntity, TKey>> logger,
-            IMapper mapper,
-            ActivitySource? activitySource = null)
+            IRequestContext requestContext,
+            ActivitySource activitySource,
+            IMapper mapper)
+            : base(userContext, requestContext, activitySource)
         {
-            _context = context;
-            _userContext = userContext;
-            _logger = logger;
-            _mapper = mapper;
-            _activitySource = activitySource ?? new ActivitySource("Template.Application");
-        }
-
-        #endregion
-
-        #region Handler
-
-        public async Task<TResult> Handle(TQuery query, CancellationToken ct)
-        {
-            using var activity = _activitySource.StartActivity(typeof(TQuery).Name);
-            if (activity != null)
-            {
-                activity.AddTag("query.name", typeof(TQuery).Name);
-                activity.AddTag("handler", GetType().Name);
-                // activity.AddTag("user.id", _userContext.UserId.ToString());
-                // activity.AddTag("tenant.id", _userContext.TenantId.ToString());
-            }
-
-            try
-            {
-                activity?.AddEvent(new ActivityEvent("QueryExecutionStarted", tags: new ActivityTagsCollection
-            {
-                { "query.type", typeof(TQuery).Name }
-            }));
-
-                var result = await ExecuteQuery(query, ct);
-
-                if (result.IsFailure)
-                {
-                    activity?.SetStatus(ActivityStatusCode.Error, result.Error);
-                    activity?.AddEvent(new ActivityEvent("QueryExecutionFailed", tags: new ActivityTagsCollection
-                {
-                    { "error.message", result.Error }
-                }));
-                }
-                else
-                {
-                    activity?.SetStatus(ActivityStatusCode.Ok);
-                    activity?.AddEvent(new ActivityEvent("QueryExecutionSucceeded"));
-                }
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unhandled exception in query handler: {Query}", typeof(TQuery).Name);
-                activity?.SetStatus(ActivityStatusCode.Error, "Unhandled exception");
-                activity?.AddEvent(new ActivityEvent("QueryExecutionError", tags: new ActivityTagsCollection
-            {
-                { "error.message", ex.Message },
-                { "error.type", ex.GetType().Name }
-            }));
-                return (TResult)Result.Failure($"Unexpected error: {ex.Message}");
-            }
+            _queryContext = queryContext ?? throw new ArgumentNullException(nameof(queryContext));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         #endregion
 
         #region Overridables
+
+        /// <summary>
+        /// Implement ONLY core business logic for the query. 
+        /// All validation, logging, error handling, etc. are handled by the pipeline.
+        /// </summary>
+        /// <param name="query">The query to execute.</param>
+        /// <param name="ct">The cancellation token.</param>
+        /// <returns>A <typeref name="Task{TResult}"/> representing the asynchronous operation.</returns>
+        protected override async Task<TResult> ExecuteAsync(TQuery query, CancellationToken ct)
+        {
+            using var activity = _activitySource.StartActivity($"{typeof(TQuery).Name}{AppData.Activity.SuffixQuery}", ActivityKind.Internal);
+            activity?.SetTag(AppData.Activity.TagQueryType, typeof(TQuery).Name);
+            activity?.AddEvent(new ActivityEvent(AppData.Activity.EventQueryExecutionStarted));
+
+            try
+            {
+                var result = await ExecuteQueryAsync(query, ct).ConfigureAwait(false);
+                activity?.SetStatus(ActivityStatusCode.Ok);
+                activity?.AddEvent(new ActivityEvent(AppData.Activity.EventQueryExecutionSucceeded));
+                return result;
+            }
+            catch (Exception ex)
+            {
+                activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                activity?.AddEvent(new ActivityEvent(AppData.Activity.EventQueryExecutionFailed, tags: new ActivityTagsCollection
+                {
+                    { AppData.Activity.TagExceptionType, ex.GetType().Name },
+                    { AppData.Activity.TagExceptionMessage, ex.Message }
+                }));
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Implement the actual query execution logic here.
+        /// </summary>
+        /// <param name="query">The query to execute.</param>
+        /// <param name="ct">The cancellation token.</param>
+        /// <returns>A <typeref name="Task{TResult}"/> representing the asynchronous operation.</returns>
+        protected abstract Task<TResult> ExecuteQueryAsync(TQuery query, CancellationToken ct);
 
         /// <summary>
         /// Override to implement the actual query execution logic.
