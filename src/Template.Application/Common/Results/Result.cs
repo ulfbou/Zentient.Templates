@@ -2,6 +2,8 @@
 using System.Diagnostics.CodeAnalysis;
 
 using Template.Domain.Common.Result;
+using Template.Domain.Contracts;
+using Template.Domain.ValueObjects;
 
 namespace Template.Application.Common.Results
 {
@@ -99,5 +101,19 @@ namespace Template.Application.Common.Results
         /// <param name="errors">The error messages.</param>
         /// <param name="value">The value associated with the failure.</param>
         public static IResult<T> Failure<T>(T? value, IEnumerable<string> errors) => Result<T>.Failure(value, errors);
+
+        /// <summary>
+        /// Creates a failed result indicating that an entity was not found.
+        /// </summary>
+        /// <typeparam name="TKey">The type of the entity's ID.</typeparam>
+        /// <param name="typeName">The name of the entity type.</param>
+        /// <param name="id">The ID of the entity.</param>
+        /// <returns>A new instance of the <see cref="Result"/> class representing failure.</returns>
+        public static IResult NotFound<TEntity, TKey>(TKey id)
+            where TEntity : class, IEntity<TKey>
+            where TKey : struct, IIdentity<TKey>
+        {
+            return Failure($"Entity of type {typeof(TEntity).Name} with ID {id} not found.");
+        }
     }
 }
