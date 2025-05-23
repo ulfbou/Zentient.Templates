@@ -12,6 +12,8 @@ using Template.Domain.Common.Result;
 using Template.Domain.Contracts;
 using Template.Domain.ValueObjects;
 
+using Zentient.Results;
+
 namespace Template.Application.Common.Handlers
 {
     /// <summary>
@@ -57,10 +59,26 @@ namespace Template.Application.Common.Handlers
             using var activity = _activitySource.StartActivity($"{typeof(TCommand).Name}{AppData.Activity.SuffixCreate}", ActivityKind.Internal);
             activity?.AddEvent(new ActivityEvent(AppData.Activity.EventMappingToEntity));
 
-            var entityToCreate = await MapToEntityAsync(command, ct).ConfigureAwait(false);
+            var entityToCreateResult = await MapToEntityAsync(command, ct).ConfigureAwait(false);
+
+            if (entityToCreateResult.IsFailure)
+            {
+                var errorString = entityToCreateResult.Error
+                    ?? (entityToCreateResult.Errors is { Count: > 0 }
+                        ? string.Join(", ", entityToCreateResult.Errors.Select(e => e.ToString()))
+                        : string.Empty);
+
+                activity?.SetStatus(ActivityStatusCode.Error, errorString);
+                activity?.AddEvent(new ActivityEvent(AppData.Activity.EventMappingFailed, tags: new ActivityTagsCollection
+                {
+                    { AppData.Activity.TagError, errorString }
+                }));
+                return Result.Failure<TResponse>(AppData.Entities.MappingFailed(entityToCreateResult.Errors ?? []));
+            }
 
             activity?.AddEvent(new ActivityEvent(AppData.Activity.EventAddingToContext));
-            var addResult = await _commandContext.AddAsync(entityToCreate, ct).ConfigureAwait(false);
+            var entityToCreate = entityToCreateResult.Value;
+            var addResult = await _commandContext.AddAsync(entityToCreate!, ct).ConfigureAwait(false);
 
             if (addResult.IsFailure)
             {
@@ -69,7 +87,7 @@ namespace Template.Application.Common.Handlers
                 {
                     { AppData.Activity.TagError, addResult.Error ?? string.Join(", ", addResult.Errors ?? new string[0]) }
                 }));
-                return Result<TResponse>.Failure(null, addResult.Errors);
+                return Result<TResponse>.Failure(null, addResult.Errors ?? []);
             }
 
             activity?.AddEvent(new ActivityEvent(AppData.Activity.EventPostCreationAction));
@@ -80,7 +98,7 @@ namespace Template.Application.Common.Handlers
 
             activity?.SetStatus(ActivityStatusCode.Ok);
             activity?.AddEvent(new ActivityEvent(AppData.Activity.EventCreationSucceeded));
-            return Result<TResponse>.Success(response);
+            return response;
         }
 
         /// <summary>
@@ -89,7 +107,7 @@ namespace Template.Application.Common.Handlers
         /// <param name="command">The command to map.</param>
         /// <param name="ct">The cancellation token.</param>
         /// <returns>A <typeref name="Task{TEntity}"/> representing the mapped entity.</returns>
-        protected abstract Task<TEntity> MapToEntityAsync(TCommand command, CancellationToken ct);
+        protected abstract Task<IResult<TEntity>> MapToEntityAsync(TCommand command, CancellationToken ct);
 
         /// <summary>
         /// Maps the entity to a response asynchronously.
@@ -97,7 +115,7 @@ namespace Template.Application.Common.Handlers
         /// <param name="entity">The entity to map.</param>
         /// <param name="ct">The cancellation token.</param>
         /// <returns>A <typeref name="Task{TResponse}"/> representing the mapped response.</returns>
-        protected abstract Task<TResponse> MapToResponseAsync(TEntity entity, CancellationToken ct);
+        protected abstract Task<IResult<TResponse>> MapToResponseAsync(TEntity entity, CancellationToken ct);
 
         /// <summary>
         /// Performs post-creation actions asynchronously.

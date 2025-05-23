@@ -16,6 +16,8 @@ using Template.Domain.Common.Result;
 using Template.Domain.Contracts;
 using Template.Domain.ValueObjects;
 
+using Zentient.Results;
+
 namespace Template.Application.Common.Handlers
 {
     public abstract class BaseUpdateCommandHandler<TCommand, TEntity, TKey>
@@ -61,7 +63,8 @@ namespace Template.Application.Common.Handlers
                 var notFoundMsg = string.Format(AppData.Messages.EntityNotFoundFormat, typeof(TEntity).Name, id);
                 activity?.SetStatus(ActivityStatusCode.Error, notFoundMsg);
                 activity?.AddEvent(new ActivityEvent(AppData.Activity.EventEntityNotFound, tags: new ActivityTagsCollection { { AppData.Activity.TagId, id.ToString() ?? string.Empty } }));
-                return Result.NotFound<TEntity, TKey>(id);
+
+                return Result.NotFound(AppData.Entities.NotFound<TKey>(id));
             }
 
             activity?.AddEvent(new ActivityEvent(AppData.Activity.EventUpdateAction));

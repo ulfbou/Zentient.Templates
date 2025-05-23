@@ -45,8 +45,7 @@ namespace Template.Application.Common.Handlers
             ActivitySource activitySource,
             IMapper mapper)
             : base(queryContext, userContext, requestContext, activitySource, mapper)
-        {
-        }
+        { }
 
         #endregion
 
@@ -69,7 +68,13 @@ namespace Template.Application.Common.Handlers
                 var validationResult = await ValidateQuery(query, ct);
                 if (validationResult.IsFailure)
                 {
-                    return Result.Failure<PaginatedList<TResult>>(null, validationResult.Error ?? "Query Validation Failed");
+                    activity?.SetStatus(ActivityStatusCode.Error, validationResult.Error);
+                    activity?.AddEvent(new ActivityEvent(AppData.Activity.EventQueryValidationFailed, tags: new ActivityTagsCollection
+                        {
+                            { AppData.Activity.TagError, validationResult.Error }
+                        }));
+                    return Result.Failure<PaginatedList<TResult>>(null, validationResult.Error ??
+                        AppData.Messages.QueryValidationFailed);
                 }
 
                 var results = await FetchEntities(query, ct);
