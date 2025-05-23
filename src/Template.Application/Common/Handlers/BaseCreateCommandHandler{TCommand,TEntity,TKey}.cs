@@ -85,16 +85,23 @@ namespace Template.Application.Common.Handlers
                 activity?.SetStatus(ActivityStatusCode.Error, addResult.Error);
                 activity?.AddEvent(new ActivityEvent(AppData.Activity.EventCreationFailed, tags: new ActivityTagsCollection
                 {
-                    { AppData.Activity.TagError, addResult.Error ?? string.Join(", ", addResult.Errors ?? new string[0]) }
+                    { AppData.Activity.TagError, !string.IsNullOrEmpty(addResult.Error)
+                        ? addResult.Error
+                        : (addResult.Errors is { Count: > 0 }
+                            ? string.Join(", ", addResult.Errors.Select(e => e.ToString()))
+                            : string.Empty)
+                    }
                 }));
-                return Result<TResponse>.Failure(null, addResult.Errors ?? []);
+                return Result.Failure<TResponse>(AppData.Entities.CreationFailed(addResult.Errors ?? []));
             }
 
+            var createdEntity = addResult.Value!;
+
             activity?.AddEvent(new ActivityEvent(AppData.Activity.EventPostCreationAction));
-            await PerformPostCreationActionAsync(command, addResult.Value, ct).ConfigureAwait(false);
+            await PerformPostCreationActionAsync(command, createdEntity, ct).ConfigureAwait(false);
 
             activity?.AddEvent(new ActivityEvent(AppData.Activity.EventMappingToResponse));
-            var response = await MapToResponseAsync(addResult.Value, ct).ConfigureAwait(false);
+            var response = await MapToResponseAsync(createdEntity, ct).ConfigureAwait(false);
 
             activity?.SetStatus(ActivityStatusCode.Ok);
             activity?.AddEvent(new ActivityEvent(AppData.Activity.EventCreationSucceeded));

@@ -13,6 +13,7 @@ using Template.Domain.Contracts;
 using Template.Domain.ValueObjects;
 using System.Diagnostics;
 using AutoMapper;
+using Zentient.Results;
 
 namespace Template.Application.Common.Handlers
 {

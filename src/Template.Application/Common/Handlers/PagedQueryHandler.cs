@@ -13,6 +13,8 @@ using Template.Domain.Common.Result;
 using Template.Domain.Contracts;
 using Template.Domain.ValueObjects;
 
+using Zentient.Results;
+
 namespace Template.Application.Common.Handlers
 {
     /// <summary>
@@ -73,8 +75,12 @@ namespace Template.Application.Common.Handlers
                         {
                             { AppData.Activity.TagError, validationResult.Error }
                         }));
-                    return Result.Failure<PaginatedList<TResult>>(null, validationResult.Error ??
-                        AppData.Messages.QueryValidationFailed);
+
+                    return Result.Failure<PaginatedList<TResult>>(
+                        AppData.Entities.PagedValidationError(
+                            validationResult.Error,
+                            GetPageNumber(query),
+                            GetPageSize(query)));
                 }
 
                 var results = await FetchEntities(query, ct);
