@@ -34,6 +34,27 @@ namespace Template.Domain.Entities
         }
         private string _email = string.Empty;
 
+        public string PasswordHash
+        {
+            get => _passwordHash;
+            private set
+            {
+                _passwordHash = value;
+            }
+        }
+        private string _passwordHash = string.Empty;
+
+        /// <inheritdoc />
+        public IReadOnlyList<string> Roles
+        {
+            get => _roles;
+            private set
+            {
+                _roles = value;
+            }
+        }
+        private IReadOnlyList<string> _roles = new List<string>();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="TenantUser"/> class.
         /// </summary>
@@ -43,10 +64,11 @@ namespace Template.Domain.Entities
         /// <param name="email">The email address of the tenant user.</param>
         /// <param name="createdBy">The user who created the tenant user.</param>
         /// <param name="validator">The validator for the tenant user.</param>
-        private TenantUser(UserId id, TenantId tenantId, string userName, string email, string createdBy) : base(tenantId, id, createdBy)
+        private TenantUser(UserId id, TenantId tenantId, string userName, string email, IReadOnlyList<string>? initialRoles, string createdBy) : base(tenantId, id, createdBy)
         {
             UserName = !string.IsNullOrWhiteSpace(userName) ? userName : throw new ArgumentNullException(nameof(userName));
             Email = !string.IsNullOrWhiteSpace(email) ? email : throw new ArgumentNullException(nameof(email));
+            Roles = initialRoles ?? new List<string>();
             _validator = ValidatorFactory.Create<TenantUser, UserId>();
             _validator.Validate(this);
         }
@@ -68,7 +90,7 @@ namespace Template.Domain.Entities
         /// <param name="createdBy">The user who created the tenant user.</param>
         /// <param name="validator">The validator for the tenant user.</param>
         /// <returns>A new instance of the <see cref="TenantUser"/> class.</returns>
-        public static TenantUser Create(TenantId tenantId, string userName, string email, string passwordHash, string initialRole, string createdBy)
+        public static TenantUser Create(TenantId tenantId, string userName, string email, string passwordHash, IEnumerable<string>? initialRoles, string createdBy)
         {
             if (string.IsNullOrWhiteSpace(userName))
             {
@@ -80,7 +102,34 @@ namespace Template.Domain.Entities
                 throw new ArgumentNullException(nameof(email));
             }
 
-            TenantUser newUser = new TenantUser(UserId.New(), tenantId, userName, email, createdBy);
+            if (string.IsNullOrWhiteSpace(passwordHash))
+            {
+                throw new ArgumentNullException(nameof(passwordHash));
+            }
+
+            if (initialRoles != null)
+            {
+                var roles = new List<string>();
+                var errors = new List<string>();
+                foreach (var role in initialRoles)
+                {
+                    if (string.IsNullOrWhiteSpace(role))
+                    {
+                        errors.Add("Role cannot be null or whitespace.");
+                        continue;
+                    }
+
+                    roles.Add(role);
+                }
+
+                if (errors.Count > 0)
+                {
+                    throw new ArgumentException(string.Join("; ", errors), nameof(initialRoles));
+                }
+            }
+
+
+            TenantUser newUser = new TenantUser(UserId.New(), tenantId, userName, email, initialRoles?.ToList(), createdBy);
             newUser.RaiseEvent(new TenantUserCreatedEvent(newUser.Id));
             return newUser;
         }
@@ -109,6 +158,51 @@ namespace Template.Domain.Entities
             _validator.Validate(this);
             MarkModified(modifiedBy);
             RaiseEvent(new TenantUserChangedEmailEvent(Id, Email, oldEmail));
+        }
+
+        /// <inheritdoc />
+        public void SetRoles(IReadOnlyList<string> roles, string modifiedBy)
+        {
+            if (roles is null || roles.Count == 0) return;
+
+            var orderedRoles = roles.Order();
+
+            if (_roles != null)
+            {
+                if (_roles.All(r => roles.Contains(r)) && roles.All(r => _roles.Contains(r)))
+                {
+                    return;
+                }
+            }
+
+            var oldRoles = _roles;
+            Roles = orderedRoles.ToList();
+            _validator.Validate(this);
+            MarkModified(modifiedBy);
+            RaiseEvent(new TenantUserChangedRolesEvent(Id, Roles, oldRoles));
+        }
+
+        /// <inheritdoc />
+        public void Update(IReadOnlyList<string> roles, string? passwordHash, string modifiedBy)
+        {
+            if (roles != null)
+            {
+                SetRoles(roles, modifiedBy);
+            }
+            if (passwordHash != null)
+            {
+                SetPassword(passwordHash, modifiedBy);
+            }
+        }
+
+        /// <inheritdoc />
+        public void SetPassword(string passwordHash, string modifiedBy)
+        {
+            if (string.IsNullOrWhiteSpace(passwordHash)) return;
+            if (passwordHash == PasswordHash) return;
+            PasswordHash = passwordHash;
+            MarkModified(modifiedBy);
+            // RaiseEvent(new TenantUserChangedPasswordEvent(Id, PasswordHash));
         }
 
         public override void MarkDeleted(string userId)

@@ -84,11 +84,19 @@ namespace Template.Domain.Entities
         }
 
         /// <inheritdoc />
-        public void UpdateName(string newName)
+        public void UpdateName(string newName, string updatedBy)
         {
+            if (string.IsNullOrWhiteSpace(newName))
+            {
+                throw new ArgumentNullException(nameof(newName), "Tenant name cannot be null or empty.");
+            }
+
             if (newName == Name) return;
+
             string previousName = Name;
             Name = newName;
+            ModifiedBy = updatedBy;
+            ModifiedOn = DateTime.UtcNow;
             _validator.Validate(this);
             RaiseEvent(new TenantUpdatedEvent(Id));
         }
@@ -102,10 +110,8 @@ namespace Template.Domain.Entities
             }
 
             // Determine if there is a change.
-            bool hasChanged = Metadata == null ||
-                              newMetadata.Count != Metadata.Count ||
+            bool hasChanged = newMetadata.Count != Metadata.Count ||
                               !newMetadata.All(kvp => Metadata.ContainsKey(kvp.Key) && Metadata[kvp.Key] == kvp.Value);
-
 
             if (hasChanged)
             {

@@ -18,17 +18,22 @@ namespace Template.Domain.Contracts
         /// Gets the metadata associated with the tenant.
         /// </summary>
         IReadOnlyDictionary<string, string> Metadata { get; }
+
+        /// <summary>
+        /// Gets the status of the tenant.
+        /// </summary>
         TenantStatus Status { get; }
 
         /// <summary>
         /// Updates the name of the tenant.
         /// </summary>
         /// <param name="newName">The new name of the tenant.</param>
+        /// <param name="modifiedBy">The user who modified the name.</param>
         /// <remarks>
         /// If the new name is the same as the current name or is <see langword="null"/> or empty, no action is taken.
         /// The <see cref="TenantUpdatedEvent"/> is raised if the name is changed.
         /// </remarks>
-        void UpdateName(string newName);
+        void UpdateName(string newName, string modifiedBy);
 
         /// <summary>
         /// Updates the metadata of the tenant.
