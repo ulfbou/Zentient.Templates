@@ -4,6 +4,8 @@ using Template.Application.Common.Results;
 using Template.Domain.Common.Result;
 using Template.Domain.ValueObjects;
 
+using Zentient.Results;
+
 namespace Template.Application.Features.Tenants.Commands
 {
     public record CreateTenantCommand(

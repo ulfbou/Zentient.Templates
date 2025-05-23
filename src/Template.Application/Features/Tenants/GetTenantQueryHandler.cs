@@ -1,54 +1,50 @@
-﻿using MediatR;
+﻿using AutoMapper;
+
+using MediatR;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.Extensions.Logging;
 
+using System.Diagnostics;
+
+using Template.Application.Common;
 using Template.Application.Common.Contracts;
+using Template.Application.Common.Handlers;
 using Template.Application.Common.Results;
 using Template.Application.Features.Tenants.Queries;
+using Template.Domain.Common.Result;
 using Template.Domain.Entities;
 using Template.Domain.ValueObjects;
 
 namespace Template.Application.Features.Tenants
 {
-    // -------------------------------
-    // Tenant Query Handlers
-    // -------------------------------
-
-    public class GetTenantQueryHandler : IRequestHandler<GetTenantQuery, Result<TenantDto>>
+    public class GetTenantQueryHandler : BaseQueryHandler<GetTenantQuery, IResult<TenantDto>, Tenant, TenantId>
     {
-        private readonly IQueryContext<Tenant, TenantId> _context;
+        public GetTenantQueryHandler(
+            IQueryContext<Tenant, TenantId> queryContext,
+            IUserContext userContext,
+            IRequestContext requestContext,
+            ActivitySource activitySource,
+            IMapper mapper)
+            : base(queryContext, userContext, requestContext, activitySource, mapper)
+        { }
 
-        public GetTenantQueryHandler(IQueryContext<Tenant, TenantId> context)
+        protected override Task<IResult<TenantDto>> ExecuteQuery(GetTenantQuery query, CancellationToken ct) => ExecuteQueryAsync(query, ct);
+
+        protected override async Task<IResult<TenantDto>> ExecuteQueryAsync(GetTenantQuery query, CancellationToken ct)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-        }
+            var tenantEntity = await _queryContext.Query()
+                                                  .Where(t => t.Id == query.TenantId)
+                                                  .FirstOrDefaultAsync(ct);
 
-        public async Task<Result<TenantDto>> Handle(GetTenantQuery query, CancellationToken cancellationToken)
-        {
-            IQueryable<Tenant> queryable = _context.Query(); // Handles tenant filtering
-
-            var tenant = await queryable
-                .Where(t => t.Id == query.TenantId)
-                .FirstOrDefaultAsync(cancellationToken);
-
-
-            // 1. Get Tenant
-            if (tenant == null)
+            if (tenantEntity == null)
             {
-                return Result<TenantDto>.Failure("Tenant not found.");
+                return Result.Failure<TenantDto>(null, AppData.Messages.TenantNotFound);
             }
 
-            // 2. Map to DTO
-            var dto = new TenantDto(
-                tenant.Id,
-                tenant.Name,
-                tenant.Status, // Assuming you have a Status property in your Tenant entity
-                tenant.Metadata,
-                tenant.CreatedOn
-            );
-
-            // 3. Return
-            return Result<TenantDto>.Success(dto);
+            var dto = _mapper.Map<TenantDto>(tenantEntity);
+            return Result.Success(dto);
         }
     }
 }
