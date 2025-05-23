@@ -36,6 +36,18 @@
             /// <summary>Suffix for paged query activities.</summary>
             public const string SuffixPagedQuery = ".PagedQuery";
 
+            /// <summary>Event for handling started.</summary>
+            public const string EventHandlingStarted = "HandlingStarted";
+
+            /// <summary>Event for handling completed.</summary>
+            public const string EventHandlingCompleted = "HandlingCompleted";
+
+            /// <summary>Event for handling failed.</summary>
+            public const string EventHandlingFailed = "HandlingFailed";
+
+            /// <summary>Log message for error during request handling.</summary>
+            public const string LogErrorHandlingRequest = "An error occurred while handling the request: {Request}";
+
             /// <summary>Event for query execution started.</summary>
             public const string EventQueryExecutionStarted = "QueryExecutionStarted";
 
