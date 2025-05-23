@@ -9,6 +9,8 @@ using Microsoft.Extensions.Logging;
 using Template.Application.Common;
 using Template.Domain.Common.Result;
 
+using Zentient.Results;
+
 namespace Template.Application.Common.Behaviors
 {
     public abstract class HandlerBase<TRequest, TResponse>

@@ -5,6 +5,8 @@ using Microsoft.Extensions.Caching.Memory;
 using Template.Application.Common.Contracts;
 using Template.Domain.Common.Result;
 
+using Zentient.Results;
+
 namespace Template.Application.Common.Behaviors
 {
     public sealed class CachingBehavior<TRequest, TResponse>

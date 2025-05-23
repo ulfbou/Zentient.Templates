@@ -12,7 +12,7 @@ namespace Template.Application.Common.Behaviors
         where TRequest : notnull
     {
         public LoggingBehavior(ILogger<LoggingBehavior<TRequest, TResponse>> logger, IUserContext userContext, ActivitySource? activitySource = null)
-            : base(logger, activitySource, userContext) { }
+            : base(activitySource, userContext) { }
 
         public override async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken ct)
         {
