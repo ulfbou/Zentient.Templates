@@ -42,7 +42,9 @@ namespace Template.Application.Features.TenantUsers
             var existsResult = await _commandContext.ExistsByNameAsync(command.Email, ct).ConfigureAwait(false);
             if (existsResult.IsSuccess)
             {
-                return Result<TenantUser>.Failure(null, string.Format(AppData.Messages.TenantUserAlreadyExists, command.Email));
+                return Result.Failure<TenantUser>(
+                    AppData.Entities.TenantUserAlreadyExists(command.Email),
+                    Zentient.Results.ResultStatuses.Conflict);
             }
 
             string hashedPassword = await _passwordHasher.HashPasswordAsync(command.Password);

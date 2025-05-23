@@ -57,7 +57,8 @@ namespace Template.Application.Features.TenantUsers
 
             if (user is null)
             {
-                return Result.Failure<TenantUserDto>(null, string.Format(AppData.Messages.TenantUserNotFound, query.UserId));
+                ErrorInfo notFoundError = AppData.Entities.NotFound(query.UserId);
+                return Result.Failure<TenantUserDto>(notFoundError);
             }
 
             var dto = _mapper.Map<TenantUserDto>(user);
@@ -86,7 +87,11 @@ namespace Template.Application.Features.TenantUsers
             : base(queryContext, userContext, requestContext, activitySource, mapper)
         { }
 
-        protected override Task<IResult<PaginatedList<TenantUserDto>>> ExecuteQuery(GetTenantUsersQuery query, CancellationToken ct) => FetchEntities(query, ct);
+        protected override Task<IResult<PaginatedList<TenantUserDto>>> ExecuteQuery(GetTenantUsersQuery query, CancellationToken ct)
+        {
+            // Delegate to ExecuteQueryAsync for compatibility with the base class signature
+            return ExecuteQueryAsync(query, ct);
+        }
 
         protected override async Task<IResult<PaginatedList<TenantUserDto>>> FetchEntities(GetTenantUsersQuery query, CancellationToken ct)
         {
@@ -124,7 +129,7 @@ namespace Template.Application.Features.TenantUsers
 
             var dtos = items.Select(_mapper.Map<TenantUserDto>).ToList();
             using var activity = _activitySource.StartActivity($"{nameof(GetTenantUsersQueryHandler)}.{nameof(FetchEntities)}", ActivityKind.Internal);
-            activity?.AddEvent(new ActivityEvent(AppData.Activity.EventMappingToDto));
+            activity?.AddEvent(new ActivityEvent(AppData.TenantUsers.EventMappingToDto));
 
             var paginatedList = new PaginatedList<TenantUserDto>(
                 dtos,
