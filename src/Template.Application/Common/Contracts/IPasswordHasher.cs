@@ -2,6 +2,6 @@
 {
     public interface IPasswordHasher
     {
-        string HashPasswordAsync(string adminPassword);
+        Task<string> HashPasswordAsync(string adminPassword);
     }
 }
