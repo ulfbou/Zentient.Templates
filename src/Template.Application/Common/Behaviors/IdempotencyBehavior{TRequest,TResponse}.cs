@@ -7,15 +7,28 @@ using Zentient.Results;
 
 namespace Template.Application.Common.Behaviors
 {
+    /// <summary>
+    /// Pipeline behavior that ensures idempotency for commands implementing <see cref="ICommandWithRequestId{TResponse}"/>.
+    /// Prevents duplicate processing of the same request by storing and reusing results.
+    /// </summary>
+    /// <typeparam name="TRequest">The type of the request, must implement <see cref="ICommandWithRequestId{TResponse}"/>.</typeparam>
+    /// <typeparam name="TResponse">The type of the response, must implement <see cref="IResult"/>.</typeparam>
     public sealed class IdempotencyBehavior<TRequest, TResponse>
-        : IPipelineBehavior<TRequest, TResponse>
+        : PipelineBehaviorBase<TRequest, TResponse>
         where TRequest : ICommandWithRequestId<TResponse>
         where TResponse : IResult
     {
         private readonly IIdempotencyStore _store;
-        public IdempotencyBehavior(IIdempotencyStore store) => _store = store;
 
-        public async Task<TResponse> Handle(
+        /// <summary>Initializes a new instance of the <see cref="IdempotencyBehavior{TRequest, TResponse}"/> class.</summary>
+        /// <param name="store">The idempotency store instance.</param>
+        public IdempotencyBehavior(IIdempotencyStore store)
+        {
+            _store = store ?? throw new ArgumentNullException(nameof(store));
+        }
+
+        /// <inheritdoc />
+        public override async Task<TResponse> Handle(
             TRequest request,
             RequestHandlerDelegate<TResponse> next,
             CancellationToken ct)

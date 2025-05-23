@@ -6,21 +6,29 @@ using Template.Application.Common.Contracts;
 
 namespace Template.Application.Common.Behaviors
 {
-    public sealed class TransactionBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+    /// <summary>
+    /// Pipeline behavior that wraps the request execution in a database transaction using <see cref="IUnitOfWork"/>.
+    /// Commits the transaction if the request succeeds, otherwise rolls back on exception.
+    /// </summary>
+    /// <typeparam name="TRequest">The type of the request.</typeparam>
+    /// <typeparam name="TResponse">The type of the response.</typeparam>
+    public sealed class TransactionBehavior<TRequest, TResponse>
+        : PipelineBehaviorBase<TRequest, TResponse>
+        where TResponse : notnull
         where TRequest : notnull
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger<TransactionBehavior<TRequest, TResponse>> _logger;
 
-        public TransactionBehavior(
-            IUnitOfWork unitOfWork,
-            ILogger<TransactionBehavior<TRequest, TResponse>> logger)
+        /// <summary>Initializes a new instance of the <see cref="TransactionBehavior{TRequest, TResponse}"/> class.</summary>
+        /// <param name="unitOfWork">The unit of work for transaction management.</param>
+        /// <param name="logger">The logger instance.</param>
+        public TransactionBehavior(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _logger = logger;
         }
 
-        public async Task<TResponse> Handle(
+        /// <inheritdoc />
+        public override async Task<TResponse> Handle(
             TRequest request,
             RequestHandlerDelegate<TResponse> next,
             CancellationToken cancellationToken)
@@ -36,9 +44,8 @@ namespace Template.Application.Common.Behaviors
 
                 return response;
             }
-            catch (Exception ex)
+            catch
             {
-                _logger.LogError(ex, "Transaction failed for request {Request}", typeof(TRequest).Name);
                 await _unitOfWork.RollbackTransactionAsync(cancellationToken);
                 throw;
             }
