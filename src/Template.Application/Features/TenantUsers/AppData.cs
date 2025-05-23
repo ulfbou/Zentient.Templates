@@ -1,4 +1,6 @@
-﻿using Template.Domain.ValueObjects;
+﻿using FluentValidation.Results;
+
+using Template.Domain.ValueObjects;
 
 using Zentient.Results;
 
@@ -7,6 +9,17 @@ namespace Template.Application.Common
     /// <summary>Application-wide constants and helpers for TenantUser features.</summary>
     public static partial class AppData
     {
+        public static partial class Validation
+        {
+            public static ErrorInfo ValidationFailed(IEnumerable<ValidationFailure> enumerable)
+                => new ErrorInfo(
+                    ErrorCategory.Validation,
+                    "ValidationFailed",
+                    "Validation failed.",
+                    enumerable.Select(e => new ErrorInfo(ErrorCategory.Validation, e.ErrorCode, e.ErrorMessage, e.AttemptedValue))
+                );
+        }
+
         /// <summary>Provides factory methods for common <see cref="ErrorInfo"/> instances related to entities.</summary>
         public static class Entities
         {
