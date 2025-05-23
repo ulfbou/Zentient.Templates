@@ -1,7 +1,4 @@
-﻿
-
-
-using Zentient.Results;
+﻿using Zentient.Results;
 
 namespace Template.Application.Common
 {

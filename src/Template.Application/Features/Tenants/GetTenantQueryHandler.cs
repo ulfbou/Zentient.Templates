@@ -17,6 +17,8 @@ using Template.Domain.Common.Result;
 using Template.Domain.Entities;
 using Template.Domain.ValueObjects;
 
+using Zentient.Results;
+
 namespace Template.Application.Features.Tenants
 {
     public class GetTenantQueryHandler : BaseQueryHandler<GetTenantQuery, IResult<TenantDto>, Tenant, TenantId>
@@ -40,7 +42,10 @@ namespace Template.Application.Features.Tenants
 
             if (tenantEntity == null)
             {
-                return Result.Failure<TenantDto>(null, AppData.Messages.TenantNotFound);
+                return Result.Failure<TenantDto>(
+                    AppData.Tenants.TenantNotFoundErrorInfo(),
+                    Zentient.Results.ResultStatuses.NotFound
+                );
             }
 
             var dto = _mapper.Map<TenantDto>(tenantEntity);
