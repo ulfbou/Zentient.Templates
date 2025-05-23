@@ -1,4 +1,5 @@
 ﻿using MediatR;
+
 using Microsoft.Extensions.Logging;
 
 using System;
@@ -15,24 +16,22 @@ namespace Template.Application.Common.Behaviors
     public abstract class PipelineBehaviorBase<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
         where TRequest : notnull
     {
-        private readonly ILogger _logger;
         private readonly ActivitySource _activitySource;
         private readonly IUserContext? _userContext;
 
-        protected PipelineBehaviorBase(ILogger logger, ActivitySource? activitySource = null, IUserContext? userContext = null)
+        protected PipelineBehaviorBase(ActivitySource? activitySource = null, IUserContext? userContext = null)
         {
-            _logger = logger;
-            _activitySource = activitySource ?? new ActivitySource("Application.Behaviors");
+            _activitySource = activitySource ?? new ActivitySource(AppData.Activity.AppBehaviors);
             _userContext = userContext;
         }
 
         protected Activity? StartActivity(string name)
         {
-            var activity = _activitySource.StartActivity(name);
+            using var activity = _activitySource.StartActivity(name);
             if (_userContext != null)
             {
-                activity?.AddTag("user.id", _userContext.UserId.ToString());
-                activity?.AddTag("tenant.id", _userContext.TenantId.ToString());
+                activity?.AddTag(AppData.Activity.TagUserId, _userContext.UserId.ToString());
+                activity?.AddTag(AppData.Activity.TagTenantId, _userContext.TenantId.ToString());
             }
             return activity;
         }
