@@ -1,8 +1,8 @@
 ﻿using MediatR;
 
-using Template.Application.Common.Results;
-using Template.Domain.Common.Result;
 using Template.Domain.ValueObjects;
+
+using Zentient.Results;
 
 namespace Template.Application.Features.TenantUsers.Commands
 {
@@ -10,14 +10,14 @@ namespace Template.Application.Features.TenantUsers.Commands
         TenantId TenantId,
         string Email,
         string Password,
-        string Role,
+        IReadOnlyList<string> Roles,
         CancellationToken CancellationToken
     ) : IRequest<IResult<CreateTenantUserResponse>>;
 
     public record UpdateTenantUserCommand(
         TenantId TenantId,
         UserId UserId,
-        string? Role,
+        IReadOnlyList<string>? Roles,
         string? Password,
         CancellationToken CancellationToken
     ) : IRequest<IResult>;
@@ -34,6 +34,6 @@ namespace Template.Application.Features.TenantUsers.Commands
 
     public record CreateTenantUserResponse(
         UserId UserId,
-        string Role
+        IReadOnlyList<string> Roles
     );
 }

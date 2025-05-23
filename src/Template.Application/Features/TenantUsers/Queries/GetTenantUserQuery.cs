@@ -5,12 +5,14 @@ using Template.Application.Common.Results;
 using Template.Domain.Common.Result;
 using Template.Domain.ValueObjects;
 
+using Zentient.Results;
+
 namespace Template.Application.Features.TenantUsers.Queries
 {
     public record GetTenantUserQuery(
         TenantId TenantId,
         UserId UserId,
-        CancellationToken CancellationToken
+        bool IncludeTenant = false
     ) : IRequest<IResult<TenantUserDto>>;
 
     public record GetTenantUsersQuery(

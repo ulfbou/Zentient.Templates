@@ -1,7 +1,12 @@
-﻿using MediatR;
+﻿using AutoMapper;
+
+using MediatR;
 
 using Microsoft.Extensions.Logging;
 
+using System.Diagnostics;
+
+using Template.Application.Common;
 using Template.Application.Common.Contracts;
 using Template.Application.Common.Handlers;
 using Template.Application.Common.Results;
@@ -11,133 +16,131 @@ using Template.Domain.Contracts;
 using Template.Domain.Entities;
 using Template.Domain.ValueObjects;
 
+using Zentient.Results;
+
 namespace Template.Application.Features.TenantUsers
 {
-    // -------------------------------
-    // Tenant User Command Handlers
-    // -------------------------------
-
-    public class CreateTenantUserCommandHandler : BaseCreateCommandHandler<CreateTenantUserCommand, CreateTenantUserResponse, TenantUser, UserId>,
-        IRequestHandler<CreateTenantUserCommand, Result<CreateTenantUserResponse>>
+    public class CreateTenantUserCommandHandler : BaseCreateCommandHandler<CreateTenantUserCommand, TenantUser, UserId, CreateTenantUserResponse>
     {
+        private readonly IPasswordHasher _passwordHasher;
+
         public CreateTenantUserCommandHandler(
             ICommandContext<TenantUser, UserId> context,
-            ILogger<CreateTenantUserCommandHandler> logger)
-            : base(context, logger)
-        { }
-
-        protected override async Task<IResult<CreateTenantUserResponse>> PerformAction(CreateTenantUserCommand command, CancellationToken ct)
+            IUserContext userContext,
+            IRequestContext requestContext,
+            ActivitySource activitySource,
+            IPasswordHasher passwordHasher)
+            : base(context, userContext, requestContext, activitySource)
         {
-            // 1. Create User
-            var user = new TenantUser(command.UserId, command.TenantId, command.Email, command.Role, command.Password);
-            await _context.AddAsync(user, ct);
-            return Result<CreateTenantUserResponse>.Success(new CreateTenantUserResponse(user.Id));
-        }
-
-    }
-    public class UpdateTenantUserCommandHandler : IRequestHandler<UpdateTenantUserCommand, Result>
-    {
-        private readonly IUserRepository _userRepository;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IPasswordHasher _passwordHasher;
-        private readonly IUserContext _userContext;
-
-        public UpdateTenantUserCommandHandler(IUserRepository userRepository, IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, IUserContext userContext)
-        {
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
-            _userContext = userContext;
         }
 
-        public async Task<Result> Handle(UpdateTenantUserCommand command, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        protected override async Task<IResult<TenantUser>> MapToEntityAsync(CreateTenantUserCommand command, CancellationToken ct)
         {
-            // 1. Get User
-            var user = await _userRepository.GetByIdAsync(command.TenantId, command.UserId, cancellationToken);
-            if (user == null)
+            // Domain rule: Check if email already exists for this tenant before creating
+            var existsResult = await _commandContext.ExistsByNameAsync(command.Email, ct).ConfigureAwait(false);
+            if (existsResult.IsSuccess)
             {
-                return Result.Failure("User not found.");
+                return Result<TenantUser>.Failure(null, string.Format(AppData.Messages.TenantUserAlreadyExists, command.Email));
             }
 
-            // 2. Update properties
+            string hashedPassword = await _passwordHasher.HashPasswordAsync(command.Password);
+
+            var entity = TenantUser.Create(
+                command.TenantId,
+                command.Email,
+                command.Email,
+                hashedPassword,
+                command.Roles,
+                _userContext.UserId
+            );
+
+            return Result<TenantUser>.Success(entity);
+        }
+
+        /// <inheritdoc />
+        protected override Task<IResult<CreateTenantUserResponse>> MapToResponseAsync(TenantUser entity, CancellationToken ct)
+        {
+            var response = new CreateTenantUserResponse(entity.Id, entity.Roles);
+            return Task.FromResult(Result.Success(response));
+        }
+    }
+
+    public class UpdateTenantUserCommandHandler : BaseUpdateCommandHandler<UpdateTenantUserCommand, TenantUser, UserId>
+    {
+        private readonly IPasswordHasher _passwordHasher;
+
+        public UpdateTenantUserCommandHandler(
+            ICommandContext<TenantUser, UserId> context,
+            IUserContext userContext,
+            IRequestContext requestContext,
+            ActivitySource activitySource,
+            IPasswordHasher passwordHasher)
+            : base(context, userContext, requestContext, activitySource)
+        {
+            _passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
+        }
+
+        /// <inheritdoc />
+        protected override UserId GetId(UpdateTenantUserCommand command) => command.UserId;
+
+        /// <inheritdoc />
+        protected override async Task<IResult> PerformUpdateActionAsync(UpdateTenantUserCommand command, TenantUser existingEntity, CancellationToken ct)
+        {
+            var roles = command.Roles ?? [];
             string? hashedPassword = null;
+
             if (command.Password != null)
             {
-                hashedPassword = _passwordHasher.HashPassword(command.Password);
+                hashedPassword = await _passwordHasher.HashPasswordAsync(command.Password);
             }
-            user.Update(command.Role, hashedPassword, _userContext.UserId);
 
-            // 3. Update in repository
-            _userRepository.Update(user);
+            existingEntity.Update(roles, hashedPassword, _userContext.UserId);
 
-            // 4. Save
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
             return Result.Success();
         }
     }
 
-    public class DeleteTenantUserCommandHandler : IRequestHandler<DeleteTenantUserCommand, Result>
+    public class DeleteTenantUserCommandHandler : BaseUpdateCommandHandler<DeleteTenantUserCommand, TenantUser, UserId>
     {
-        private readonly IUserRepository _userRepository;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IUserContext _userContext;
+        public DeleteTenantUserCommandHandler(
+            ICommandContext<TenantUser, UserId> context,
+            IUserContext userContext,
+            IRequestContext requestContext,
+            ActivitySource activitySource)
+            : base(context, userContext, requestContext, activitySource)
+        { }
 
-        public DeleteTenantUserCommandHandler(IUserRepository userRepository, IUnitOfWork unitOfWork, IUserContext userContext)
+        /// <inheritdoc />
+        protected override UserId GetId(DeleteTenantUserCommand command) => command.UserId;
+
+        /// <inheritdoc />
+        protected override Task<IResult> PerformUpdateActionAsync(DeleteTenantUserCommand command, TenantUser existingEntity, CancellationToken ct)
         {
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
-            _userContext = userContext;
-        }
-
-        public async Task<Result> Handle(DeleteTenantUserCommand command, CancellationToken cancellationToken)
-        {
-            // 1. Get User
-            var user = await _userRepository.GetByIdAsync(command.UserId, cancellationToken);
-            if (user == null)
-            {
-                return Result.Failure("User not found.");
-            }
-
-            // 2. Delete (soft delete)
-            user.Delete(_userContext.UserId);
-            _userRepository.Update(user);
-
-            // 3. Save
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-            return Result.Success();
+            existingEntity.MarkDeleted(_userContext.UserId);
+            return Task.FromResult<IResult>(Result.Success());
         }
     }
 
-    public class RestoreTenantUserCommandHandler : IRequestHandler<RestoreTenantUserCommand, Result>
+    public class RestoreTenantUserCommandHandler : BaseUpdateCommandHandler<RestoreTenantUserCommand, TenantUser, UserId>
     {
-        private readonly IUserRepository _userRepository;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IUserContext _userContext;
+        public RestoreTenantUserCommandHandler(
+            ICommandContext<TenantUser, UserId> context,
+            IUserContext userContext,
+            IRequestContext requestContext,
+            ActivitySource activitySource)
+            : base(context, userContext, requestContext, activitySource)
+        { }
 
-        public RestoreTenantUserCommandHandler(IUserRepository userRepository, IUnitOfWork unitOfWork, IUserContext userContext)
+        /// <inheritdoc />
+        protected override UserId GetId(RestoreTenantUserCommand command) => command.UserId;
+
+        /// <inheritdoc />
+        protected override Task<IResult> PerformUpdateActionAsync(RestoreTenantUserCommand command, TenantUser existingEntity, CancellationToken ct)
         {
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
-            _userContext = userContext;
-        }
-
-        public async Task<Result> Handle(RestoreTenantUserCommand command, CancellationToken cancellationToken)
-        {
-            // 1. Get User
-            var user = await _userRepository.GetByIdAsync(command.UserId, cancellationToken);
-            if (user == null)
-            {
-                return Result.Failure("User not found.");
-            }
-
-            // 2. Restore  
-            user.Restore(_userContext.UserId);
-            _userRepository.Update(user);
-
-            // 3. Save
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-            return Result.Success();
+            existingEntity.Restore(_userContext.UserId);
+            return Task.FromResult<IResult>(Result.Success());
         }
     }
 }
-

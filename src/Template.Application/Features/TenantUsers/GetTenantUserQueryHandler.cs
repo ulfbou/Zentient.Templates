@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Logging;
 
+using Template.Application.Common;
 using Template.Application.Common.Contracts;
 using Template.Application.Common.Handlers;
 using Template.Application.Common.Results;
@@ -27,98 +28,117 @@ using Template.Domain.Entities;
 using Template.Domain.Entities.Validation;
 using Template.Domain.ValueObjects;
 
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Zentient.Results;
 
 namespace Template.Application.Features.TenantUsers
 {
-    public class GetTenantUserQueryHandler : BaseQueryHandler<GetTenantUserQuery, IResult<TenantUserDto>, TenantUser, UserId>, IRequestHandler<GetTenantUserQuery, IResult<TenantUserDto>>
+    public class GetTenantUserQueryHandler : BaseQueryHandler<GetTenantUserQuery, IResult<TenantUserDto>, TenantUser, UserId>
     {
         public GetTenantUserQueryHandler(
-            IQueryContext<TenantUser, UserId> context,
+            IQueryContext<TenantUser, UserId> queryContext,
             IUserContext userContext,
-            ILogger<BaseQueryHandler<GetTenantUserQuery, IResult<TenantUserDto>, TenantUser, UserId>> logger,
-            IMapper mapper,
-            ActivitySource? activitySource = null)
-
-            : base(context ?? throw new ArgumentNullException(nameof(context)),
-                  userContext ?? throw new ArgumentNullException(nameof(userContext)),
-                  logger ?? throw new ArgumentNullException(nameof(logger)),
-                  mapper ?? throw new ArgumentNullException(nameof(mapper)),
-                    activitySource)
+            IRequestContext requestContext,
+            ActivitySource activitySource,
+            IMapper mapper)
+            : base(queryContext, userContext, requestContext, activitySource, mapper)
         { }
 
-        protected override async Task<IResult<TenantUserDto>> ExecuteQuery(GetTenantUserQuery query, CancellationToken ct)
+        protected override async Task<IResult<TenantUserDto>> ExecuteQueryAsync(GetTenantUserQuery query, CancellationToken ct)
         {
-            // 1. Get User
-            var user = await _context.Query()
-                .Where(u => u.Id == query.UserId)
-                .Include(u => u.Tenant)
-                .Select(u => _mapper.Map<TenantUserDto>(u))
-                .FirstOrDefaultAsync(ct);
+            var userQuery = _queryContext.Query()
+                                          .Where(u => u.Id == query.UserId);
 
-            if (user == null)
+            if (query.IncludeTenant)
             {
-                return Result.Failure<TenantUserDto>(null, $"User with ID {query.UserId} not found.");
+                userQuery = userQuery.Include(u => u.Tenant);
             }
 
-            return Result.Success<TenantUserDto>(user);
+            var user = await userQuery.FirstOrDefaultAsync(ct);
+
+            if (user is null)
+            {
+                return Result.Failure<TenantUserDto>(null, string.Format(AppData.Messages.TenantUserNotFound, query.UserId));
+            }
+
+            var dto = _mapper.Map<TenantUserDto>(user);
+
+            using var activity = _activitySource.StartActivity($"{nameof(GetTenantUserQueryHandler)}.{nameof(ExecuteQueryAsync)}", ActivityKind.Internal);
+            activity?.AddEvent(new ActivityEvent(AppData.TenantUsers.EventMappingToDto));
+
+            return Result.Success(dto);
+        }
+
+        protected override Task<IResult<TenantUserDto>> ExecuteQuery(GetTenantUserQuery query, CancellationToken ct)
+        {
+            // Delegate to ExecuteQueryAsync for compatibility
+            return ExecuteQueryAsync(query, ct);
         }
     }
 
-    public class GetTenantUsersQueryHandler : PagedQueryHandler<GetTenantUsersQuery, TenantUserDto, TenantUser, UserId>, IRequestHandler<GetTenantUsersQuery, IResult<PaginatedList<TenantUserDto>>>
+    public class GetTenantUsersQueryHandler : PagedQueryHandler<GetTenantUsersQuery, TenantUserDto, TenantUser, UserId>
     {
-        private readonly IMapper _mapper;
-
         public GetTenantUsersQueryHandler(
-            IQueryContext<TenantUser, UserId> context,
-            ILogger<GetTenantUsersQueryHandler> logger,
+            IQueryContext<TenantUser, UserId> queryContext,
+            IUserContext userContext,
+            IRequestContext requestContext,
+            ActivitySource activitySource,
             IMapper mapper)
-            : base(context, logger)
-        {
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        }
+            : base(queryContext, userContext, requestContext, activitySource, mapper)
+        { }
 
-        protected override async Task<IResult<PaginatedList<TenantUserDto>>> FetchEntities(GetTenantUsersQuery query, CancellationToken cancellationToken)
-        {
-            var usersQuery = _context.Query()
-                .Include(u => u.Tenant);
+        protected override Task<IResult<PaginatedList<TenantUserDto>>> ExecuteQuery(GetTenantUsersQuery query, CancellationToken ct) => FetchEntities(query, ct);
 
-            // Optional: Apply filtering
+        protected override async Task<IResult<PaginatedList<TenantUserDto>>> FetchEntities(GetTenantUsersQuery query, CancellationToken ct)
+        {
+            var usersQuery = _queryContext.Query().AsNoTracking();
+
+            // Apply filtering
             if (!string.IsNullOrWhiteSpace(query.Paging.Filter))
             {
-                usersQuery = (IIncludableQueryable<TenantUser, ITenant>)usersQuery
+                usersQuery = usersQuery
                     .Where(u => u.UserName.Contains(query.Paging.Filter) || u.Email.Contains(query.Paging.Filter));
             }
 
-            // Optional: Apply sorting
-            IOrderedQueryable<TenantUser> orderedQuery = null!;
+            // Apply sorting
+            IOrderedQueryable<TenantUser> orderedQuery;
+
             if (!string.IsNullOrWhiteSpace(query.Paging.SortBy))
             {
-                if (query.Paging.SortBy.Equals(nameof(TenantUser.UserName), StringComparison.OrdinalIgnoreCase))
-                    orderedQuery = query.Paging.IsAscending ? usersQuery.OrderBy(u => u.UserName) : usersQuery.OrderByDescending(u => u.UserName);
-                else if (query.Paging.SortBy.Equals(nameof(TenantUser.Email), StringComparison.OrdinalIgnoreCase))
-                    orderedQuery = query.Paging.IsAscending ? usersQuery.OrderBy(u => u.Email) : usersQuery.OrderByDescending(u => u.Email);
+                orderedQuery = query.Paging.SortBy.Equals(nameof(TenantUser.UserName), StringComparison.OrdinalIgnoreCase)
+                    ? (query.Paging.IsAscending ? usersQuery.OrderBy(u => u.UserName) : usersQuery.OrderByDescending(u => u.UserName))
+                    : (query.Paging.SortBy.Equals(nameof(TenantUser.Email), StringComparison.OrdinalIgnoreCase)
+                        ? (query.Paging.IsAscending ? usersQuery.OrderBy(u => u.Email) : usersQuery.OrderByDescending(u => u.Email))
+                        : usersQuery.OrderBy(u => u.UserName));
             }
             else
             {
                 orderedQuery = usersQuery.OrderBy(u => u.UserName);
             }
 
-            var totalCount = await orderedQuery.CountAsync(cancellationToken);
-            var items = await usersQuery
-                .Skip((GetPageNumber(query) - 1) * GetPageSize(query))
-                .Take(GetPageSize(query))
-                .ToListAsync(cancellationToken);
+            var totalCount = await orderedQuery.CountAsync(ct);
+
+            var items = await orderedQuery
+                .Skip(query.Paging.Skip)
+                .Take(query.Paging.Take)
+                .ToListAsync(ct);
 
             var dtos = items.Select(_mapper.Map<TenantUserDto>).ToList();
+            using var activity = _activitySource.StartActivity($"{nameof(GetTenantUsersQueryHandler)}.{nameof(FetchEntities)}", ActivityKind.Internal);
+            activity?.AddEvent(new ActivityEvent(AppData.Activity.EventMappingToDto));
 
-            var paginatedList = new PaginatedList<TenantUserDto>(dtos, totalCount, GetPageNumber(query), GetPageSize(query));
-            return Result.Success(paginatedList);
+            var paginatedList = new PaginatedList<TenantUserDto>(
+                dtos,
+                totalCount,
+                query.Paging.PageNumber,
+                query.Paging.PageSize
+            );
+
+            return Result<PaginatedList<TenantUserDto>>.Success(paginatedList);
         }
 
-        protected override int GetPageNumber(GetTenantUsersQuery query) => query.Paging.PageNumber > 0 ? query.Paging.PageNumber : 1;
-
-        protected override int GetPageSize(GetTenantUsersQuery query) => query.Paging.PageSize > 0 ? query.Paging.PageSize : 20;
+        protected override int GetPageNumber(GetTenantUsersQuery query) =>
+            query.Paging.PageNumber > 0 ? query.Paging.PageNumber : Default.PageNumber;
+        protected override int GetPageSize(GetTenantUsersQuery query) =>
+            query.Paging.PageSize > 0 ? query.Paging.PageSize : Default.PageSize;
     }
 }
-
