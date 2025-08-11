@@ -1,3 +1,4 @@
+<!-- Directory.Test.targets -->
 <Project>
 
   <Target Name="RunUnitTests" Condition="'$(IsTestProject)' == 'true'">

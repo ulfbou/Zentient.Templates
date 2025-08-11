@@ -62,6 +62,13 @@
     <AssemblyVersion>$(VersionPrefix).0</AssemblyVersion>
     <FileVersion>$(VersionPrefix).0</FileVersion>
     <InformationalVersion>$(Version)</InformationalVersion>
+
+    <!-- Configuration-specific properties -->
+    <DefineConstants Condition="'$(TargetFramework)' == 'net7.0'">$(DefineConstants);NET7_0</DefineConstants>
+    <DefineConstants Condition="'$(TargetFramework)' == 'net8.0'">$(DefineConstants);NET8_0</DefineConstants>
+    <DefineConstants Condition="'$(TargetFramework)' == 'net9.0'">$(DefineConstants);NET9_0</DefineConstants>
+    <DefineConstants Condition="'$(TargetFramework)' == 'net10.0'">$(DefineConstants);NET10_0</DefineConstants>
+
   </PropertyGroup>
 
   <!-- Import Specialized Directory Files -->
@@ -72,5 +79,5 @@
   <Import Project="Directory.Security.props" Condition="Exists('Directory.Security.props') AND '$(EnableSecurity)' == 'true'" />
   <Import Project="Directory.Documentation.props" Condition="Exists('Directory.Documentation.props') AND '$(EnableDocumentation)' == 'true'" />
   <Import Project="Directory.Performance.props" Condition="Exists('Directory.Performance.props') AND '$(EnablePerformance)' == 'true'" />
-
+  
 </Project>
