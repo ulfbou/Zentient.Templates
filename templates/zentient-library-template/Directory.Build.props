@@ -2,6 +2,7 @@
 
   <!-- Core Project Configuration -->
   <PropertyGroup>
+    
     <!-- Project metadata -->
     <Product>Zentient Framework</Product>
     <Company>LIBRARY_COMPANY</Company>
@@ -21,11 +22,14 @@
     
     <!-- Language and framework settings -->
     <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
     <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
     <WarningsAsErrors />
     <WarningsNotAsErrors />
-    
+
+    <Optimize>true</Optimize>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+
     <!-- Assembly information -->
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <GenerateAssemblyTitleAttribute>true</GenerateAssemblyTitleAttribute>

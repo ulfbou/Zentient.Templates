@@ -1,5 +1,7 @@
+<!-- Directory.Pack.targets -->
 <Project>
 
+  <!-- NuGet Package Automation Targets -->
   <Target Name="ValidatePackageConfiguration" BeforeTargets="GenerateNuspec" Condition="'$(IsPackable)' == 'true'">
     <Message Text="Validating package configuration..." Importance="high" />
     

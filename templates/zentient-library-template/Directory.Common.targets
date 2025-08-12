@@ -1,0 +1,41 @@
+<!-- Directory.Common.targets -->
+<Project>
+
+  <!-- Common Test Project Detection -->
+  <PropertyGroup Label="Test Project Detection">
+    <IsTestProject Condition="'$(IsTestProject)' != 'true'">false</IsTestProject>
+    <IsTestProject Condition="$(MSBuildProjectName.EndsWith('.Tests')) OR $(MSBuildProjectName.EndsWith('.IntegrationTests')) OR $(MSBuildProjectName.EndsWith('.UnitTests'))">true</IsTestProject>
+  </PropertyGroup>
+
+  <!-- Consistent OutputType Setting -->
+  <PropertyGroup Label="Conditional OutputType Setting">
+    <OutputType>Library</OutputType>
+    <OutputType Condition="'$(IsTestProject)' == 'true'">Exe</OutputType>
+    <OutputType Condition="'$(MSBuildProjectName.EndsWith('.Console'))">Exe</OutputType>
+  </PropertyGroup>
+  
+  <!-- Analyzer and Documentation Settings for Test Projects -->
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <WarningsNotAsErrors />
+  </PropertyGroup>
+
+  <!-- Documentation Settings for Non-Test Projects -->
+  <PropertyGroup Condition="'$(IsTestProject)' != 'true'">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+
+    <!-- Nullable reference types -->
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+
+  </PropertyGroup>
+</Project>

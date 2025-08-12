@@ -22,6 +22,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{87654321-4321-8765-CBA9-210FEDCBA987}"
 	ProjectSection(SolutionItems) = preProject
+		Directory.Common.targets = Directory.Common.targets
 		Directory.Documentation.props = Directory.Documentation.props
 		Directory.Documentation.targets = Directory.Documentation.targets
 		Directory.Pack.props = Directory.Pack.props
@@ -60,8 +61,6 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {11111111-2222-3333-4444-555555555555}
