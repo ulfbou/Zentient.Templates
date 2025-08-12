@@ -1,14 +1,6 @@
 # Zentient.Templates — Enterprise-Grade .NET Project Templates
 
-[![Build](https://img.shields.io/github/actions/workflow/status/ulfbou/Zentient.Templates/docs.yml)](https://github.com/ulf**Minimal Web API Project:**
-```bash
-dotnet new zentient -n MyWebAPI \
-  --UseDocker true \
-  --UseRedisCache false \
-  --UseEntityFramework false \
-  --IncludeAdvancedPatterns false
-```
-ient.Templates/actions)
+[![Build](https://img.shields.io/github/actions/workflow/status/ulfbou/Zentient.Templates/docs.yml)](https://github.com/ulfbou/Zentient.Templates/actions)
 ![License](https://img.shields.io/github/license/ulfbou/Zentient.Templates)
 ![.NET Versions](https://img.shields.io/badge/.NET-6.0%20%7C%207.0%20%7C%208.0%20%7C%209.0-blue)
 
@@ -38,7 +30,7 @@ Whether you're building libraries, applications, or complete projects, these tem
 
 Common pain points when starting new .NET projects:
 
-* � **Manual Setup Overhead** - Hours spent configuring build systems, CI/CD, quality gates
+* 🛠️ **Manual Setup Overhead** - Hours spent configuring build systems, CI/CD, quality gates
 * 📚 **Inconsistent Standards** - Different projects using different conventions and tooling
 * 🔍 **Missing Best Practices** - Security, performance, and maintainability considerations overlooked
 * 🚫 **Incomplete Automation** - Manual processes that should be automated from the start
@@ -135,7 +127,7 @@ dotnet new zentient -n MySimpleApp \
 
 ---
 
-## �️ Template Features
+## 🛠️ Template Features
 
 ### Comprehensive Automation
 - **Build System**: MSBuild automation through Directory.*.props/targets files
