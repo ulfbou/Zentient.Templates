@@ -1,27 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- A Test Project must never generate a Program File! -->
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <IsPackable>false</IsPackable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <OutputType>Library</OutputType>
     <GenerateProgramFile>false</GenerateProgramFile>
 
-    <!-- Completely disable code analysis for tests -->
-    <EnableNETAnalyzers>false</EnableNETAnalyzers>
-    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
-    <RunCodeAnalysis>false</RunCodeAnalysis>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS5001;SA1200;SA1101;SA1633;SA1636;SA1609;SA1518;SA1210;SA0001</NoWarn>
-
-    <!-- Suppress analyzer warnings -->
-    <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
+    <!-- Remove OutputType for test projects to avoid entry point error -->
+    <OutputType Condition="'$(IsTestProject)' == 'true'">Exe</OutputType>
   </PropertyGroup>
 
   <!-- Test Framework Dependencies -->
   <ItemGroup>
+    
     <!-- Essential for test discovery and execution -->
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />

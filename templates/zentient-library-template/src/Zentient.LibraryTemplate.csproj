@@ -9,7 +9,6 @@
     <!-- Framework and Language -->
     <TargetFramework>net8.0</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
 
     <!-- Assembly Properties -->
@@ -31,11 +30,6 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-
-    <!-- Documentation -->
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <!-- Remove explicit DocumentationFile path to avoid file lock issues -->
-    <!-- <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile> -->
 
     <!-- Build Configuration -->
     <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
@@ -60,6 +54,7 @@
     <!-- Suppress analyzer upgrade warning -->
     <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
   </PropertyGroup>
+  
   <!-- Framework Dependencies -->
   <ItemGroup>
     <!-- Core Zentient Abstractions -->
