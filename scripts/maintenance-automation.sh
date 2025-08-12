@@ -1,5 +1,5 @@
 #!/bin/bash
-# Zentient Templates - Complete Maintenance Automation Script
+# Zentient Templates - Complete Maintenance Automation Script (maintenance-automation.sh)
 # This script performs all maintenance tasks for the template repository
 
 set -e

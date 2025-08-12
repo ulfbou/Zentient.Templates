@@ -1,5 +1,5 @@
 #!/bin/bash
-# Zentient Templates - Comprehensive Local Validation Script
+# Zentient Templates - Comprehensive Local Validation Script (test-templates.sh)
 # This script validates all template functionality with proper error handling
 
 set -e

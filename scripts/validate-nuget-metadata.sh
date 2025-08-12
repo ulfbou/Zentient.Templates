@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Template NuGet Package Validation Script
+# Template NuGet Package Validation Script (validate-nuget-metadata.sh)
 # This script validates that templates generate projects with proper NuGet metadata
 
 set -e
