@@ -1,5 +1,7 @@
+<!-- Directory.Quality.targets -->
 <Project>
 
+  <!-- Quality Features Targets -->
   <Target Name="RunCodeAnalysis" BeforeTargets="Build" Condition="'$(RunCodeAnalysis)' == 'true'">
     <Message Text="Running code analysis..." Importance="high" />
 
@@ -31,16 +33,6 @@
     <PropertyGroup>
       <StyleCopOutputFile>$(OutputPath)StyleCopReport.xml</StyleCopOutputFile>
     </PropertyGroup>
-  </Target>
-
-  <Target Name="RunSecurityAnalysis" BeforeTargets="Build" Condition="'$(RunSecurityCodeAnalysis)' == 'true'">
-    <Message Text="Running security analysis..." Importance="high" />
-
-    <PropertyGroup>
-      <SecurityAnalysisOutputFile>$(OutputPath)SecurityAnalysisReport.xml</SecurityAnalysisOutputFile>
-    </PropertyGroup>
-
-    <!-- Security analysis runs as part of the analyzers -->
   </Target>
 
   <Target Name="ValidateApiSurface" BeforeTargets="Build" Condition="'$(IsPackable)' == 'true' AND Exists('PublicAPI.Shipped.txt')">

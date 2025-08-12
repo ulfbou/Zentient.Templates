@@ -1,35 +1,24 @@
+<!-- Directory.Security.props -->
 <Project>
 
   <!-- Security Analysis Configuration -->
-  <PropertyGroup>
-    <!-- Enable security analysis by default -->
+  <PropertyGroup Label="Security Analysis Configuration">
     <RunSecurityCodeAnalysis Condition="'$(RunSecurityCodeAnalysis)' == ''">true</RunSecurityCodeAnalysis>
     <SecurityAnalysisLevel Condition="'$(SecurityAnalysisLevel)' == ''">7</SecurityAnalysisLevel>
-
-    <!-- Secure development lifecycle -->
     <EnableSecureSourceGeneration Condition="'$(EnableSecureSourceGeneration)' == ''">true</EnableSecureSourceGeneration>
     <ValidateSecurityAttributes Condition="'$(ValidateSecurityAttributes)' == ''">true</ValidateSecurityAttributes>
-
-    <!-- Cryptographic settings -->
     <EnforceCryptographicStandards Condition="'$(EnforceCryptographicStandards)' == ''">true</EnforceCryptographicStandards>
     <RequireStrongCryptography Condition="'$(RequireStrongCryptography)' == ''">true</RequireStrongCryptography>
-
-    <!-- Input validation -->
     <ValidateUserInputs Condition="'$(ValidateUserInputs)' == ''">true</ValidateUserInputs>
     <SanitizeOutputs Condition="'$(SanitizeOutputs)' == ''">true</SanitizeOutputs>
-
-    <!-- Dependency scanning -->
     <ScanNuGetPackages Condition="'$(ScanNuGetPackages)' == ''">true</ScanNuGetPackages>
     <ValidateDependencyIntegrity Condition="'$(ValidateDependencyIntegrity)' == ''">true</ValidateDependencyIntegrity>
-
-    <!-- Binary analysis -->
     <PerformBinaryAnalysis Condition="'$(PerformBinaryAnalysis)' == ''">false</PerformBinaryAnalysis>
     <CheckForVulnerabilities Condition="'$(CheckForVulnerabilities)' == ''">true</CheckForVulnerabilities>
   </PropertyGroup>
 
   <!-- Security Analyzers -->
-  <ItemGroup Condition="'$(RunSecurityCodeAnalysis)' == 'true'">
-    <!-- Security-focused analyzers -->
+  <ItemGroup Condition="'$(RunSecurityCodeAnalysis)' == 'true'" Label="Security Analyzers">
     <PackageReference Include="SecurityCodeScan.VS2019" Version="5.6.7">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
@@ -37,128 +26,92 @@
   </ItemGroup>
 
   <!-- Cryptographic Standards -->
-  <PropertyGroup Condition="'$(EnforceCryptographicStandards)' == 'true'">
-    <!-- Minimum key sizes -->
+  <PropertyGroup Condition="'$(EnforceCryptographicStandards)' == 'true'" Label="Cryptographic Standards">
     <MinimumRSAKeySize Condition="'$(MinimumRSAKeySize)' == ''">2048</MinimumRSAKeySize>
     <MinimumECCKeySize Condition="'$(MinimumECCKeySize)' == ''">256</MinimumECCKeySize>
-
-    <!-- Allowed algorithms -->
     <AllowedHashAlgorithms Condition="'$(AllowedHashAlgorithms)' == ''">SHA256;SHA384;SHA512</AllowedHashAlgorithms>
     <AllowedSymmetricAlgorithms Condition="'$(AllowedSymmetricAlgorithms)' == ''">AES</AllowedSymmetricAlgorithms>
-
-    <!-- Prohibited algorithms -->
     <ProhibitedAlgorithms Condition="'$(ProhibitedAlgorithms)' == ''">MD5;SHA1;DES;3DES;RC4</ProhibitedAlgorithms>
   </PropertyGroup>
 
   <!-- Input Validation Rules -->
-  <PropertyGroup Condition="'$(ValidateUserInputs)' == 'true'">
-    <!-- String validation -->
-    <MaxStringLength Condition="'$(MaxStringLength)' == ''">1048576</MaxStringLength> <!-- 1MB -->
+  <PropertyGroup Condition="'$(ValidateUserInputs)' == 'true'" Label="Input Validation Rules">    
+    <MaxStringLength Condition="'$(MaxStringLength)' == ''">1048576</MaxStringLength>
     <ValidateStringEncodings Condition="'$(ValidateStringEncodings)' == ''">true</ValidateStringEncodings>
-
-    <!-- Numeric validation -->
     <ValidateNumericRanges Condition="'$(ValidateNumericRanges)' == ''">true</ValidateNumericRanges>
     <PreventIntegerOverflow Condition="'$(PreventIntegerOverflow)' == ''">true</PreventIntegerOverflow>
-
-    <!-- File validation -->
     <ValidateFileExtensions Condition="'$(ValidateFileExtensions)' == ''">true</ValidateFileExtensions>
-    <MaxFileSize Condition="'$(MaxFileSize)' == ''">104857600</MaxFileSize> <!-- 100MB -->
-
-    <!-- URL validation -->
+    <MaxFileSize Condition="'$(MaxFileSize)' == ''">104857600</MaxFileSize>
     <ValidateUrls Condition="'$(ValidateUrls)' == ''">true</ValidateUrls>
     <AllowedSchemes Condition="'$(AllowedSchemes)' == ''">https;http</AllowedSchemes>
   </PropertyGroup>
 
   <!-- Dependency Security -->
-  <PropertyGroup Condition="'$(ScanNuGetPackages)' == 'true'">
-    <!-- Vulnerability scanning -->
+  <PropertyGroup Condition="'$(ScanNuGetPackages)' == 'true'" Label="Dependency Security">
     <NuGetAudit Condition="'$(NuGetAudit)' == ''">true</NuGetAudit>
     <AuditLevel Condition="'$(AuditLevel)' == ''">low</AuditLevel>
-
-    <!-- Package validation -->
     <RequirePackageSignatures Condition="'$(RequirePackageSignatures)' == ''">true</RequirePackageSignatures>
     <ValidatePackageIntegrity Condition="'$(ValidatePackageIntegrity)' == ''">true</ValidatePackageIntegrity>
-
-    <!-- License validation -->
     <ValidateLicenses Condition="'$(ValidateLicenses)' == ''">true</ValidateLicenses>
     <AllowedLicenses Condition="'$(AllowedLicenses)' == ''">MIT;Apache-2.0;BSD-3-Clause;ISC</AllowedLicenses>
   </PropertyGroup>
 
   <!-- Security Compilation Flags -->
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <!-- Buffer overflow protection -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" Label="Security Compilation Flags">
     <DefineConstants>$(DefineConstants);SECURE_BUILD</DefineConstants>
-
-    <!-- Runtime security checks -->
-    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
-
-    <!-- Assembly security -->
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <AssemblyTitle>$(ProjectName) - Secure Build</AssemblyTitle>
+  </PropertyGroup>
 
-    <!-- Code access security (legacy .NET Framework)
+  <!-- Security Analysis -->
+  <PropertyGroup Label="Security Analysis">
+    <EnableSecurityAnalysis>true</EnableSecurityAnalysis>
+    <RunSecurityCodeAnalysis Condition="'$(Configuration)' == 'Release'">true</RunSecurityCodeAnalysis>
+    <EnablePackageVulnerabilityAudit>true</EnablePackageVulnerabilityAudit>
+    <AuditLevel>low</AuditLevel>
     <AllowPartiallyTrustedCallers>false</AllowPartiallyTrustedCallers>
-    <SecurityTransparent>false</SecurityTransparent> -->
+    <SecurityTransparent>false</SecurityTransparent>
   </PropertyGroup>
 
   <!-- Security Attributes -->
-  <PropertyGroup Condition="'$(ValidateSecurityAttributes)' == 'true'">
-    <!-- Assembly-level security -->
+  <PropertyGroup Condition="'$(ValidateSecurityAttributes)' == 'true'" Label="Security Attributes">
     <GenerateAssemblySecurityTransparentAttribute>false</GenerateAssemblySecurityTransparentAttribute>
     <GenerateAssemblyAllowPartiallyTrustedCallersAttribute>false</GenerateAssemblyAllowPartiallyTrustedCallersAttribute>
-
-    <!-- Method-level security validation -->
     <ValidateSecurityCriticalMethods>true</ValidateSecurityCriticalMethods>
     <RequireSecurityAnnotations>true</RequireSecurityAnnotations>
   </PropertyGroup>
 
   <!-- Secure Source Generation -->
-  <PropertyGroup Condition="'$(EnableSecureSourceGeneration)' == 'true'">
-    <!-- Source generator security -->
+  <PropertyGroup Condition="'$(EnableSecureSourceGeneration)' == 'true'" Label="Secure Source Generation">    
     <ValidateSourceGenerators>true</ValidateSourceGenerators>
     <SecureSourceGeneratorExecution>true</SecureSourceGeneratorExecution>
-
-    <!-- Generated code validation -->
     <ValidateGeneratedCode>true</ValidateGeneratedCode>
     <AnalyzeGeneratedCode>true</AnalyzeGeneratedCode>
   </PropertyGroup>
 
   <!-- Binary Security Analysis -->
-  <PropertyGroup Condition="'$(PerformBinaryAnalysis)' == 'true'">
-    <!-- Binary analysis tools -->
+  <PropertyGroup Condition="'$(PerformBinaryAnalysis)' == 'true'" Label="Binary Security Analysis">    
     <EnableBinaryAnalysis>true</EnableBinaryAnalysis>
     <BinaryAnalysisLevel>high</BinaryAnalysisLevel>
-
-    <!-- Assembly validation -->
     <ValidateAssemblyIntegrity>true</ValidateAssemblyIntegrity>
     <CheckAssemblySignatures>true</CheckAssemblySignatures>
-
-    <!-- Runtime protection -->
     <EnableControlFlowGuard>true</EnableControlFlowGuard>
     <EnableDataExecutionPrevention>true</EnableDataExecutionPrevention>
   </PropertyGroup>
 
   <!-- Security Warning Configuration -->
-  <PropertyGroup>
-    <!-- Elevate security warnings to errors -->
+  <PropertyGroup Label="Security Warning Configuration">
     <WarningsAsErrors Condition="'$(Configuration)' == 'Release'">$(WarningsAsErrors);CA3001;CA3002;CA3003;CA3004;CA3005;CA3006;CA3007;CA3008;CA3009;CA3010;CA3011;CA3012</WarningsAsErrors>
-
-    <!-- Security-specific warnings -->
-    <NoWarn Condition="'$(Configuration)' == 'Debug'">$(NoWarn);CA1031</NoWarn> <!-- Allow general exceptions in debug -->
-
-    <!-- Custom security rules -->
+    <NoWarn Condition="'$(Configuration)' == 'Debug'">$(NoWarn);CA1031</NoWarn>
     <CustomSecurityRules Condition="'$(CustomSecurityRules)' == ''">true</CustomSecurityRules>
   </PropertyGroup>
 
   <!-- Threat Modeling Integration -->
-  <PropertyGroup Condition="'$(EnableThreatModeling)' == 'true'">
-    <!-- Threat model validation -->
+  <PropertyGroup Condition="'$(EnableThreatModeling)' == 'true'" Label="Threat Modeling Integration">
     <ValidateThreatModel>true</ValidateThreatModel>
     <ThreatModelPath Condition="'$(ThreatModelPath)' == ''">$(MSBuildProjectDirectory)\ThreatModel.tm7</ThreatModelPath>
-
-    <!-- Security requirements -->
     <ValidateSecurityRequirements>true</ValidateSecurityRequirements>
     <SecurityRequirementsPath Condition="'$(SecurityRequirementsPath)' == ''">$(MSBuildProjectDirectory)\SecurityRequirements.json</SecurityRequirementsPath>
   </PropertyGroup>

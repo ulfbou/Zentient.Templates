@@ -1,37 +1,37 @@
+<!-- Directory.Performance.props -->
 <Project>
 
   <!-- Performance Monitoring Configuration -->
   <PropertyGroup>
-    <!-- Enable performance monitoring -->
     <EnablePerformanceMonitoring Condition="'$(EnablePerformanceMonitoring)' == ''">false</EnablePerformanceMonitoring>
     <PerformanceBenchmarkingEnabled Condition="'$(PerformanceBenchmarkingEnabled)' == ''">false</PerformanceBenchmarkingEnabled>
-    
+
     <!-- Benchmark configuration -->
     <BenchmarkFramework Condition="'$(BenchmarkFramework)' == ''">BenchmarkDotNet</BenchmarkFramework>
     <BenchmarkConfiguration Condition="'$(BenchmarkConfiguration)' == ''">Release</BenchmarkConfiguration>
     <BenchmarkJob Condition="'$(BenchmarkJob)' == ''">Default</BenchmarkJob>
-    
+
     <!-- Performance thresholds -->
-    <PerformanceRegressionThreshold Condition="'$(PerformanceRegressionThreshold)' == ''">10</PerformanceRegressionThreshold> <!-- 10% -->
-    <MaxAllowedMemoryIncrease Condition="'$(MaxAllowedMemoryIncrease)' == ''">15</MaxAllowedMemoryIncrease> <!-- 15% -->
-    <MaxExecutionTimeIncrease Condition="'$(MaxExecutionTimeIncrease)' == ''">20</MaxExecutionTimeIncrease> <!-- 20% -->
-    
+    <PerformanceRegressionThreshold Condition="'$(PerformanceRegressionThreshold)' == ''">10</PerformanceRegressionThreshold>
+    <MaxAllowedMemoryIncrease Condition="'$(MaxAllowedMemoryIncrease)' == ''">15</MaxAllowedMemoryIncrease>
+    <MaxExecutionTimeIncrease Condition="'$(MaxExecutionTimeIncrease)' == ''">20</MaxExecutionTimeIncrease>
+
     <!-- Profiling settings -->
     <EnableProfiling Condition="'$(EnableProfiling)' == ''">false</EnableProfiling>
     <ProfilingMode Condition="'$(ProfilingMode)' == ''">sampling</ProfilingMode>
     <ProfileMemoryUsage Condition="'$(ProfileMemoryUsage)' == ''">true</ProfileMemoryUsage>
     <ProfileCpuUsage Condition="'$(ProfileCpuUsage)' == ''">true</ProfileCpuUsage>
-    
+
     <!-- Performance reporting -->
     <GeneratePerformanceReports Condition="'$(GeneratePerformanceReports)' == ''">true</GeneratePerformanceReports>
     <PerformanceReportFormat Condition="'$(PerformanceReportFormat)' == ''">html</PerformanceReportFormat>
     <CompareWithBaseline Condition="'$(CompareWithBaseline)' == ''">true</CompareWithBaseline>
-    
+
     <!-- Load testing -->
     <EnableLoadTesting Condition="'$(EnableLoadTesting)' == ''">false</EnableLoadTesting>
-    <LoadTestDuration Condition="'$(LoadTestDuration)' == ''">60</LoadTestDuration> <!-- seconds -->
+    <LoadTestDuration Condition="'$(LoadTestDuration)' == ''">60</LoadTestDuration>
     <MaxConcurrentUsers Condition="'$(MaxConcurrentUsers)' == ''">100</MaxConcurrentUsers>
-    
+
     <!-- Memory analysis -->
     <EnableMemoryAnalysis Condition="'$(EnableMemoryAnalysis)' == ''">false</EnableMemoryAnalysis>
     <DetectMemoryLeaks Condition="'$(DetectMemoryLeaks)' == ''">true</DetectMemoryLeaks>
@@ -40,19 +40,14 @@
 
   <!-- Performance Testing Tools -->
   <ItemGroup Condition="'$(PerformanceBenchmarkingEnabled)' == 'true'">
-    <!-- BenchmarkDotNet for performance benchmarking -->
     <PackageReference Include="BenchmarkDotNet" Version="0.13.12">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles</IncludeAssets>
     </PackageReference>
-    
-    <!-- Performance analysis tools -->
     <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.13.12" Condition="$([MSBuild]::IsOSPlatform('Windows'))">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles</IncludeAssets>
     </PackageReference>
-    
-    <!-- Memory diagnostics -->
     <PackageReference Include="Microsoft.Diagnostics.Runtime" Version="3.0.442">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles</IncludeAssets>
@@ -61,59 +56,37 @@
 
   <!-- Performance Optimization Settings -->
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <!-- Compiler optimizations -->
-    <Optimize>true</Optimize>
-    <DebugType>portable</DebugType>
-    <DebugSymbols>true</DebugSymbols>
-    
-    <!-- Advanced optimizations -->
     <EnableOptimizations>true</EnableOptimizations>
     <TieredCompilation>true</TieredCompilation>
     <TieredCompilationQuickJit>true</TieredCompilationQuickJit>
-    
-    <!-- Memory optimizations -->
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
     <RetainVMGarbageCollection>false</RetainVMGarbageCollection>
-    
-    <!-- JIT optimizations -->
-    <PublishReadyToRun>false</PublishReadyToRun> <!-- Disable for libraries -->
-    <PublishTrimmed>false</PublishTrimmed> <!-- Not applicable for libraries -->
+    <PublishReadyToRun>false</PublishReadyToRun>
+    <PublishTrimmed>false</PublishTrimmed>
   </PropertyGroup>
 
   <!-- Benchmark Configuration -->
   <PropertyGroup Condition="'$(PerformanceBenchmarkingEnabled)' == 'true'">
-    <!-- Benchmark execution settings -->
     <BenchmarkOutputPath Condition="'$(BenchmarkOutputPath)' == ''">$(OutputPath)Benchmarks</BenchmarkOutputPath>
     <BenchmarkArtifactsPath Condition="'$(BenchmarkArtifactsPath)' == ''">$(BenchmarkOutputPath)\BenchmarkDotNet.Artifacts</BenchmarkArtifactsPath>
-    
-    <!-- Benchmark categories -->
     <BenchmarkCategories Condition="'$(BenchmarkCategories)' == ''">Fast,Performance</BenchmarkCategories>
     <RunSlowBenchmarks Condition="'$(RunSlowBenchmarks)' == ''">false</RunSlowBenchmarks>
-    
-    <!-- Statistical configuration -->
     <BenchmarkInvocationCount Condition="'$(BenchmarkInvocationCount)' == ''">1</BenchmarkInvocationCount>
     <BenchmarkIterationCount Condition="'$(BenchmarkIterationCount)' == ''">15</BenchmarkIterationCount>
     <BenchmarkWarmupCount Condition="'$(BenchmarkWarmupCount)' == ''">5</BenchmarkWarmupCount>
-    
-    <!-- Hardware configuration -->
     <BenchmarkForceGcCleanup Condition="'$(BenchmarkForceGcCleanup)' == ''">true</BenchmarkForceGcCleanup>
     <BenchmarkPreserveWorkingSet Condition="'$(BenchmarkPreserveWorkingSet)' == ''">false</BenchmarkPreserveWorkingSet>
   </PropertyGroup>
 
   <!-- Load Testing Configuration -->
   <PropertyGroup Condition="'$(EnableLoadTesting)' == ''">
-    <!-- Load test parameters -->
     <LoadTestScenarios Condition="'$(LoadTestScenarios)' == ''">Standard,Stress,Peak</LoadTestScenarios>
-    <LoadTestRampUpTime Condition="'$(LoadTestRampUpTime)' == ''">30</LoadTestRampUpTime> <!-- seconds -->
-    <LoadTestSustainTime Condition="'$(LoadTestSustainTime)' == ''">120</LoadTestSustainTime> <!-- seconds -->
-    
-    <!-- Performance thresholds for load testing -->
-    <MaxResponseTime Condition="'$(MaxResponseTime)' == ''">1000</MaxResponseTime> <!-- milliseconds -->
-    <MinThroughput Condition="'$(MinThroughput)' == ''">100</MinThroughput> <!-- requests per second -->
-    <MaxErrorRate Condition="'$(MaxErrorRate)' == ''">1</MaxErrorRate> <!-- percentage -->
-    
-    <!-- Resource monitoring during load tests -->
+    <LoadTestRampUpTime Condition="'$(LoadTestRampUpTime)' == ''">30</LoadTestRampUpTime>
+    <LoadTestSustainTime Condition="'$(LoadTestSustainTime)' == ''">120</LoadTestSustainTime>
+    <MaxResponseTime Condition="'$(MaxResponseTime)' == ''">1000</MaxResponseTime>
+    <MinThroughput Condition="'$(MinThroughput)' == ''">100</MinThroughput>
+    <MaxErrorRate Condition="'$(MaxErrorRate)' == ''">1</MaxErrorRate>
     <MonitorCpuUsage Condition="'$(MonitorCpuUsage)' == ''">true</MonitorCpuUsage>
     <MonitorMemoryUsage Condition="'$(MonitorMemoryUsage)' == ''">true</MonitorMemoryUsage>
     <MonitorNetworkUsage Condition="'$(MonitorNetworkUsage)' == ''">false</MonitorNetworkUsage>
@@ -121,15 +94,10 @@
 
   <!-- Memory Analysis Configuration -->
   <PropertyGroup Condition="'$(EnableMemoryAnalysis)' == 'true'">
-    <!-- Memory profiling settings -->
-    <MemoryProfilingDuration Condition="'$(MemoryProfilingDuration)' == ''">300</MemoryProfilingDuration> <!-- seconds -->
-    <MemoryProfilingSampleRate Condition="'$(MemoryProfilingSampleRate)' == ''">100</MemoryProfilingSampleRate> <!-- milliseconds -->
-    
-    <!-- Leak detection settings -->
+    <MemoryProfilingDuration Condition="'$(MemoryProfilingDuration)' == ''">300</MemoryProfilingDuration>
+    <MemoryProfilingSampleRate Condition="'$(MemoryProfilingSampleRate)' == ''">100</MemoryProfilingSampleRate>
     <MemoryLeakDetectionSensitivity Condition="'$(MemoryLeakDetectionSensitivity)' == ''">medium</MemoryLeakDetectionSensitivity>
-    <MaxAllowableMemoryGrowth Condition="'$(MaxAllowableMemoryGrowth)' == ''">50</MaxAllowableMemoryGrowth> <!-- MB -->
-    
-    <!-- GC analysis settings -->
+    <MaxAllowableMemoryGrowth Condition="'$(MaxAllowableMemoryGrowth)' == ''">50</MaxAllowableMemoryGrowth>
     <AnalyzeGen0Collections Condition="'$(AnalyzeGen0Collections)' == ''">true</AnalyzeGen0Collections>
     <AnalyzeGen1Collections Condition="'$(AnalyzeGen1Collections)' == ''">true</AnalyzeGen1Collections>
     <AnalyzeGen2Collections Condition="'$(AnalyzeGen2Collections)' == ''">true</AnalyzeGen2Collections>
@@ -138,12 +106,9 @@
 
   <!-- Performance Baseline Management -->
   <PropertyGroup Condition="'$(CompareWithBaseline)' == 'true'">
-    <!-- Baseline configuration -->
     <PerformanceBaselinePath Condition="'$(PerformanceBaselinePath)' == ''">$(MSBuildProjectDirectory)\performance-baseline.json</PerformanceBaselinePath>
     <AutoUpdateBaseline Condition="'$(AutoUpdateBaseline)' == ''">false</AutoUpdateBaseline>
     <BaselineTolerancePercentage Condition="'$(BaselineTolerancePercentage)' == ''">5</BaselineTolerancePercentage>
-    
-    <!-- Baseline validation -->
     <ValidateAgainstBaseline Condition="'$(ValidateAgainstBaseline)' == ''">true</ValidateAgainstBaseline>
     <FailBuildOnRegression Condition="'$(FailBuildOnRegression)' == ''">false</FailBuildOnRegression>
     <WarnOnRegression Condition="'$(WarnOnRegression)' == ''">true</WarnOnRegression>
@@ -151,36 +116,24 @@
 
   <!-- Performance Reporting Configuration -->
   <PropertyGroup Condition="'$(GeneratePerformanceReports)' == 'true'">
-    <!-- Report generation settings -->
     <PerformanceReportPath Condition="'$(PerformanceReportPath)' == ''">$(OutputPath)PerformanceReports</PerformanceReportPath>
     <PerformanceReportFormats Condition="'$(PerformanceReportFormats)' == ''">html,json,csv</PerformanceReportFormats>
-    
-    <!-- Report content configuration -->
     <IncludeBenchmarkDetails Condition="'$(IncludeBenchmarkDetails)' == ''">true</IncludeBenchmarkDetails>
     <IncludeMemoryStatistics Condition="'$(IncludeMemoryStatistics)' == ''">true</IncludeMemoryStatistics>
     <IncludeSystemInformation Condition="'$(IncludeSystemInformation)' == ''">true</IncludeSystemInformation>
     <IncludeEnvironmentDetails Condition="'$(IncludeEnvironmentDetails)' == ''">true</IncludeEnvironmentDetails>
-    
-    <!-- Historical data -->
     <IncludeHistoricalData Condition="'$(IncludeHistoricalData)' == ''">true</IncludeHistoricalData>
     <HistoricalDataRetentionDays Condition="'$(HistoricalDataRetentionDays)' == ''">90</HistoricalDataRetentionDays>
   </PropertyGroup>
 
   <!-- Advanced Performance Features -->
   <PropertyGroup Condition="'$(EnableAdvancedPerformanceFeatures)' == 'true'">
-    <!-- Micro-benchmarking -->
     <EnableMicroBenchmarks Condition="'$(EnableMicroBenchmarks)' == ''">false</EnableMicroBenchmarks>
     <MicroBenchmarkPrecision Condition="'$(MicroBenchmarkPrecision)' == ''">nanosecond</MicroBenchmarkPrecision>
-    
-    <!-- Performance regression detection -->
     <EnableRegressionDetection Condition="'$(EnableRegressionDetection)' == ''">true</EnableRegressionDetection>
     <RegressionDetectionSensitivity Condition="'$(RegressionDetectionSensitivity)' == ''">medium</RegressionDetectionSensitivity>
-    
-    <!-- Continuous performance monitoring -->
     <EnableContinuousMonitoring Condition="'$(EnableContinuousMonitoring)' == ''">false</EnableContinuousMonitoring>
-    <MonitoringInterval Condition="'$(MonitoringInterval)' == ''">300</MonitoringInterval> <!-- seconds -->
-    
-    <!-- Performance alerting -->
+    <MonitoringInterval Condition="'$(MonitoringInterval)' == ''">300</MonitoringInterval>
     <EnablePerformanceAlerts Condition="'$(EnablePerformanceAlerts)' == ''">false</EnablePerformanceAlerts>
     <AlertOnMemoryLeak Condition="'$(AlertOnMemoryLeak)' == ''">true</AlertOnMemoryLeak>
     <AlertOnPerformanceRegression Condition="'$(AlertOnPerformanceRegression)' == ''">true</AlertOnPerformanceRegression>

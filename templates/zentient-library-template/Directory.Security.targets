@@ -1,5 +1,7 @@
+<!-- Directory.Security.targets -->
 <Project>
 
+  <!-- Security Analysis Targets -->
   <Target Name="RunSecurityScan" BeforeTargets="Build" Condition="'$(RunSecurityCodeAnalysis)' == 'true'">
     <Message Text="Running security analysis..." Importance="high" />
 
