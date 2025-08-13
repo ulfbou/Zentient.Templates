@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Documentation Generation and Validation Script
+# Documentation Generation and Validation Script (generate-docs.sh)
 # This script automates the complete documentation generation process
 
 set -e
