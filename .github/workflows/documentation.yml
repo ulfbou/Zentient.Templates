@@ -1,4 +1,5 @@
 ---
+# Path: .github/workflows/release.yml (for MyTestProject repository)
 name: Documentation Generation
 
 on:

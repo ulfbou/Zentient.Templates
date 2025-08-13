@@ -40,9 +40,30 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentat
 		docs\README.md = docs\README.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{E8764675-6F91-4306-BA7B-241A94731061}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\.github\workflows\documentation.yml = ..\..\.github\workflows\documentation.yml
+		..\..\.github\workflows\publish.yml = ..\..\.github\workflows\publish.yml
+		template-validation.yml = template-validation.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{1798A609-07DA-45BA-BD5B-450B8398DC7E}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\scripts\generate-docs.sh = ..\..\scripts\generate-docs.sh
+		..\..\scripts\maintenance-automation.sh = ..\..\scripts\maintenance-automation.sh
+		..\..\scripts\publish-templates.sh = ..\..\scripts\publish-templates.sh
+		..\..\scripts\test-templates.sh = ..\..\scripts\test-templates.sh
+		..\..\scripts\validate-nuget-metadata.sh = ..\..\scripts\validate-nuget-metadata.sh
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E8764675-6F91-4306-BA7B-241A94731061} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {11111111-2222-3333-4444-555555555555}
