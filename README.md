@@ -1,8 +1,9 @@
 # Zentient.Template — {One-line Description of the Module's Purpose}
 
-[![Build](https://img.shields.io/github/actions/workflow/status/ulfbou/Zentient.Templates/docs.yml)](https://github.com/ulfbou/Zentient.Templates/actions)
-![License](https://img.shields.io/github/license/ulfbou/Zentient.Templates)
-![.NET Versions](https://img.shields.io/badge/.NET-6.0%20%7C%207.0%20%7C%208.0%20%7C%209.0-blue)
+[![NuGet](https://img.shields.io/nuget/v/Zentient.Template?label=Zentient.Template)](https://www.nuget.org/packages/Zentient.Template)
+[![Build](https://img.shields.io/github/actions/workflow/status/ulfbou/Zentient.Template/build.yml)](https://github.com/ulfbou/Zentient.Template/actions)
+![License](https://img.shields.io/github/license/ulfbou/Zentient.Template)
+![.NET Versions](https://img.shields.io/badge/.NET-8.0%20%7C%209.0-blue)
 
 ---
 
@@ -32,10 +33,10 @@ Whether used standalone or as part of the larger [Zentient Framework](https://gi
 
 Common challenges in modern .NET systems that this module addresses:
 
-* 🛠️ **Manual Setup Overhead** - Hours spent configuring build systems, CI/CD, quality gates
-* 📚 **Inconsistent Standards** - Different projects using different conventions and tooling
-* 🔍 **Missing Best Practices** - Security, performance, and maintainability considerations overlooked
-* 🚫 **Incomplete Automation** - Manual processes that should be automated from the start
+* 🔁 Repetition of infrastructure logic across layers
+* ⚠️ Tight coupling between concerns (validation, mapping, transport)
+* 🔍 Lack of composability and observability around critical flows
+* 🚫 Overuse of exceptions where structured data would be superior
 
 ### ✨ Key Features
 
@@ -88,30 +89,7 @@ dotnet add package Zentient.Template
 builder.Services.AddZentientPackageTemplate(); // DI-friendly setup
 ```
 
----
-
-## 🛠️ Template Features
-
-### Comprehensive Automation
-- **Build System**: MSBuild automation through Directory.*.props/targets files
-- **Quality Gates**: Code analysis, StyleCop, security scanning
-- **Testing**: xUnit, FluentAssertions, coverage reporting, benchmarks
-- **Documentation**: XML docs, DocFX, API documentation generation
-- **CI/CD**: GitHub Actions workflows for build, test, and deployment
-
-### Developer Experience
-- **Zero Configuration**: Everything works immediately after template instantiation
-- **VS Code Integration**: Debug configurations, tasks, recommended extensions
-- **IntelliSense**: Complete IDE support with proper project references
-- **Hot Reload**: Development-optimized build configurations
-
-### Enterprise Features
-- **Security**: Vulnerability scanning, dependency auditing, security compliance
-- **Performance**: Benchmarking, profiling, memory analysis
-- **Observability**: Logging, metrics, health checks integration
-- **Deployment**: Container support, package generation, signing
-
----
+**3. Apply in your logic**
 
 ```csharp
 var result = await _myService.DoWorkAsync(request);

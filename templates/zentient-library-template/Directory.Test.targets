@@ -1,7 +1,5 @@
-<!-- Directory.Test.targets -->
 <Project>
 
-  <!-- Test project detection and targets -->
   <Target Name="RunUnitTests" Condition="'$(IsTestProject)' == 'true'">
     <PropertyGroup>
       <TestCommand>dotnet test</TestCommand>
@@ -87,8 +85,8 @@
   </Target>
 
   <Target Name="EnsureTestDirectories" BeforeTargets="Build" Condition="'$(IsTestProject)' == 'true'">
-    <MakeDir Directories="$(TestResultsDirectory)" Condition=" '$(TestResultsDirectory)' != '' and !Exists('$(TestResultsDirectory)')" />
-    <MakeDir Directories="$(OutputPath)coverage" Condition=" '$(OutputPath)' != '' and !Exists('$(OutputPath)coverage')" />
+    <MakeDir Directories="$(TestResultsDirectory)" Condition="!Exists('$(TestResultsDirectory)')" />
+    <MakeDir Directories="$(OutputPath)coverage" Condition="!Exists('$(OutputPath)coverage')" />
   </Target>
 
 </Project>

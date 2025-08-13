@@ -1,5 +1,5 @@
-// <copyright file="GlobalUsings.cs" company="Zentient">
-// Copyright © © Zentient. All rights reserved.. All rights reserved.
+// <copyright file="GlobalUsings.cs" company="LIBRARY_COMPANY">
+// Copyright © LIBRARY_COPYRIGHT. All rights reserved.
 // </copyright>
 
 global using System;

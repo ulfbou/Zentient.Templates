@@ -1,13 +1,21 @@
-<!-- Directory.Test.props -->
 <Project>
 
-  <!-- Test project configuration (test-specific only, no global build properties) -->
   <PropertyGroup Label="Test Configuration">
+    <!-- Test framework configuration -->
+    <IsTestProject Condition="$(MSBuildProjectName.EndsWith('.Tests'))">true</IsTestProject>
+    <IsTestProject Condition="$(MSBuildProjectName.EndsWith('.IntegrationTests'))">true</IsTestProject>
+    <IsTestProject Condition="$(MSBuildProjectName.EndsWith('.UnitTests'))">true</IsTestProject>
 
     <!-- Analyzer suppression for test projects -->
-    <NoWarn>$(NoWarn);SA1600;SA1200;SA1636</NoWarn>
-    <!--<TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>-->
-    
+    <NoWarn>$(NoWarn);RS0016;RS0017;RS0022;CS1591;RS0037</NoWarn>
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <WarningsNotAsErrors />
+
     <!-- Test execution settings -->
     <RunTestsInParallel Condition="'$(RunTestsInParallel)' == ''">true</RunTestsInParallel>
     <TestTimeout Condition="'$(TestTimeout)' == ''">300000</TestTimeout>
@@ -47,6 +55,7 @@
   <PropertyGroup Label="Test Dependencies" Condition="'$(IsTestProject)' == 'true'">
     <!-- Disable unnecessary features for test projects -->
     <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <SignAssembly Condition="'$(ForceTestSigning)' != 'true'">false</SignAssembly>
 
     <!-- Test project specific settings -->
@@ -63,5 +72,4 @@
     <PackageReference Include="BenchmarkDotNet" Version="0.13.10" Condition="'$(IncludeBenchmarks)' == 'true'" />
     <PackageReference Include="BenchmarkDotNet.Annotations" Version="0.13.10" Condition="'$(IncludeBenchmarks)' == 'true'" />
   </ItemGroup>
-
 </Project>

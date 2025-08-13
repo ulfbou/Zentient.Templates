@@ -77,7 +77,7 @@ dotnet build -p:PerformanceBenchmarkingEnabled=true
 
 | Parameter | Description | Default | Options |
 |-----------|-------------|---------|---------|
-| `ProjectName` | Library project name | `Zentient.LibraryTemplate` | Any valid name |
+| `ProjectName` | Library project name | `Zentient.NewLibrary` | Any valid name |
 | `Framework` | Target framework | `net8.0` | `net8.0`, `net7.0`, `net6.0`, `netstandard2.1`, `netstandard2.0` |
 | `Description` | Library description | `A Zentient framework library` | Any description |
 | `Author` | Library author | `Zentient` | Any author name |

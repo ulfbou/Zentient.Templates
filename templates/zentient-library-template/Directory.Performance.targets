@@ -1,7 +1,5 @@
-<!-- Directory.Performance.targets -->
 <Project>
 
-  <!-- Performance Testing and Benchmarking Targets -->
   <Target Name="RunPerformanceBenchmarks" Condition="'$(PerformanceBenchmarkingEnabled)' == 'true' AND '$(Configuration)' == 'Release'">
     <Message Text="Running performance benchmarks..." Importance="high" />
     

@@ -1,7 +1,5 @@
-<!-- Directory.Sign.targets -->
 <Project>
 
-  <!-- Code Signing Targets -->
   <Target Name="SignAssemblies" AfterTargets="Build" Condition="'$(EnableCodeSigning)' == 'true'">
     <PropertyGroup>
       <AssemblyToSign>$(TargetPath)</AssemblyToSign>
