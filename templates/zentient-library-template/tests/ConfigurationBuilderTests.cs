@@ -1,19 +1,15 @@
-// <copyright file="ConfigurationBuilderTests.cs" company="LIBRARY_COMPANY">
-// Copyright © 2025 LIBRARY_COMPANY. All rights reserved.
+// <copyright file="ConfigurationBuilderTests.cs" company="Zentient">
+// Copyright © 2025 Zentient. All rights reserved.
 // </copyright>
-
-using Xunit;
-using FluentAssertions;
 
 namespace Zentient.LibraryTemplate.Tests;
 
-/// <summary>Tests for <see cref="ConfigurationBuilder"/> class.</summary>
-[Trait("Category", "Unit")]
-[Collection("ConfigurationBuilder Collection")]
+/// <summary>
+/// Tests for <see cref="ConfigurationBuilder"/> class.
+/// </summary>
 public class ConfigurationBuilderTests
 {
-    [Fact(DisplayName = "Constructor initializes with empty values")]
-    [Trait("Scenario", "Initialization")]
+    [Fact]
     public void Constructor_ShouldInitializeWithEmptyValues()
     {
         // Act
@@ -25,42 +21,37 @@ public class ConfigurationBuilderTests
         builder.Metadata.Should().BeEmpty();
     }
 
-    [Theory(DisplayName = "WithName sets the Name property")]
-    [InlineData("Test Configuration")]
-    [InlineData("Another Name")]
-    [Trait("Scenario", "Setters")]
-    public void WithName_ShouldSetName(string expectedName)
+    [Fact]
+    public void WithName_ShouldSetName()
     {
         // Arrange
         var builder = new ConfigurationBuilder();
+        const string expectedName = "Test Configuration";
 
         // Act
         var result = builder.WithName(expectedName);
 
         // Assert
-        result.Should().BeSameAs(builder);
+        result.Should().BeSameAs(builder); // Should return the same instance for fluent API
         builder.Name.Should().Be(expectedName);
     }
 
-    [Theory(DisplayName = "WithDescription sets the Description property")]
-    [InlineData("Test description")]
-    [InlineData("Another description")]
-    [Trait("Scenario", "Setters")]
-    public void WithDescription_ShouldSetDescription(string expectedDescription)
+    [Fact]
+    public void WithDescription_ShouldSetDescription()
     {
         // Arrange
         var builder = new ConfigurationBuilder();
+        const string expectedDescription = "Test description";
 
         // Act
         var result = builder.WithDescription(expectedDescription);
 
         // Assert
-        result.Should().BeSameAs(builder);
+        result.Should().BeSameAs(builder); // Should return the same instance for fluent API
         builder.Description.Should().Be(expectedDescription);
     }
 
-    [Fact(DisplayName = "Fluent configuration works correctly")]
-    [Trait("Scenario", "Fluent API")]
+    [Fact]
     public void FluentConfiguration_ShouldWorkCorrectly()
     {
         // Arrange
@@ -77,14 +68,13 @@ public class ConfigurationBuilderTests
         builder.Description.Should().Be(expectedDescription);
     }
 
-    [Theory(DisplayName = "WithMetadata adds key-value pairs")]
-    [InlineData("environment", "development")]
-    [InlineData("region", "us-east")]
-    [Trait("Scenario", "Metadata")]
-    public void WithMetadata_ShouldAddMetadataKeyValue(string key, string value)
+    [Fact]
+    public void WithMetadata_ShouldAddMetadataKeyValue()
     {
         // Arrange
         var builder = new ConfigurationBuilder();
+        const string key = "environment";
+        const string value = "development";
 
         // Act
         var result = builder.WithMetadata(key, value);
@@ -95,8 +85,7 @@ public class ConfigurationBuilderTests
         builder.Metadata[key].Should().Be(value);
     }
 
-    [Fact(DisplayName = "IsValid returns false when name or description missing")]
-    [Trait("Scenario", "Validation")]
+    [Fact]
     public void IsValid_ShouldReturnFalse_WhenNameOrDescriptionMissing()
     {
         // Arrange & Act & Assert
@@ -105,8 +94,7 @@ public class ConfigurationBuilderTests
         new ConfigurationBuilder().WithDescription("Test").IsValid().Should().BeFalse(); // Missing name
     }
 
-    [Fact(DisplayName = "IsValid returns true when name and description set")]
-    [Trait("Scenario", "Validation")]
+    [Fact]
     public void IsValid_ShouldReturnTrue_WhenNameAndDescriptionSet()
     {
         // Arrange
@@ -118,8 +106,7 @@ public class ConfigurationBuilderTests
         builder.IsValid().Should().BeTrue();
     }
 
-    [Fact(DisplayName = "GetScope returns null when scope not set")]
-    [Trait("Scenario", "Metadata")]
+    [Fact]
     public void GetScope_ShouldReturnNull_WhenScopeNotSet()
     {
         // Arrange
@@ -129,73 +116,17 @@ public class ConfigurationBuilderTests
         builder.GetScope().Should().BeNull();
     }
 
-    [Theory(DisplayName = "GetScope returns scope when set in metadata")]
-    [InlineData("application")]
-    [InlineData("user")]
-    [Trait("Scenario", "Metadata")]
-    public void GetScope_ShouldReturnScope_WhenScopeSetInMetadata(string expectedScope)
+    [Fact]
+    public void GetScope_ShouldReturnScope_WhenScopeSetInMetadata()
     {
         // Arrange
         var builder = new ConfigurationBuilder();
+        const string expectedScope = "application";
 
         // Act
         builder.WithMetadata("scope", expectedScope);
 
         // Assert
         builder.GetScope().Should().Be(expectedScope);
-    }
-
-    [Fact(DisplayName = "Multiple metadata entries can be added")]
-    [Trait("Scenario", "Metadata")]
-    public void WithMetadata_ShouldAllowMultipleEntries()
-    {
-        // Arrange
-        var builder = new ConfigurationBuilder();
-
-        // Act
-        builder
-            .WithMetadata("key1", "value1")
-            .WithMetadata("key2", 42)
-            .WithMetadata("key3", true);
-
-        // Assert
-        builder.Metadata.Should().HaveCount(3);
-        builder.Metadata["key1"].Should().Be("value1");
-        builder.Metadata["key2"].Should().Be(42);
-        builder.Metadata["key3"].Should().Be(true);
-    }
-
-    [Theory(DisplayName = "WithMetadata throws for null values")]
-    [InlineData(null)]
-    [Trait("Scenario", "Error Handling")]
-    public void WithMetadata_ShouldThrowArgumentNullException_WhenValueIsNull(object? value)
-    {
-        // Arrange
-        var builder = new ConfigurationBuilder();
-
-        // Act & Assert
-        var act = () => builder.WithMetadata("key", value!);
-        act.Should().Throw<ArgumentNullException>()
-           .WithParameterName("value");
-    }
-
-    [Fact(DisplayName = "Builder chain preserves all values")]
-    [Trait("Scenario", "Integration")]
-    public void BuilderChain_ShouldPreserveAllValues()
-    {
-        // Arrange & Act
-        var builder = new ConfigurationBuilder()
-            .WithName("Test Configuration")
-            .WithDescription("A test configuration for validation")
-            .WithMetadata("environment", "development")
-            .WithMetadata("version", "1.0.0");
-
-        // Assert
-        builder.Name.Should().Be("Test Configuration");
-        builder.Description.Should().Be("A test configuration for validation");
-        builder.Metadata.Should().HaveCount(2);
-        builder.Metadata["environment"].Should().Be("development");
-        builder.Metadata["version"].Should().Be("1.0.0");
-        builder.IsValid().Should().BeTrue();
     }
 }

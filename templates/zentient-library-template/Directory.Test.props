@@ -3,10 +3,11 @@
 
   <!-- Test project configuration (test-specific only, no global build properties) -->
   <PropertyGroup Label="Test Configuration">
-    
-    <!-- Analyzer suppression for test projects -->
-    <NoWarn>$(NoWarn);RS0016;RS0017;RS0022;CS1591;RS0037</NoWarn>
 
+    <!-- Analyzer suppression for test projects -->
+    <NoWarn>$(NoWarn);SA1600;SA1200;SA1636</NoWarn>
+    <!--<TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>-->
+    
     <!-- Test execution settings -->
     <RunTestsInParallel Condition="'$(RunTestsInParallel)' == ''">true</RunTestsInParallel>
     <TestTimeout Condition="'$(TestTimeout)' == ''">300000</TestTimeout>

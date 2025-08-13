@@ -1,8 +1,6 @@
-// <copyright file="ConfigurationBuilder.cs" company="LIBRARY_COMPANY">
-// Copyright © LIBRARY_COPYRIGHT. All rights reserved.
+// <copyright file="ConfigurationBuilder.cs" company="Zentient">
+// Copyright © © Zentient. All rights reserved.. All rights reserved.
 // </copyright>
-
-using System.Xml.Linq;
 
 using Zentient.Abstractions.Common;
 using Zentient.Abstractions.Configuration;
@@ -23,7 +21,9 @@ public class ConfigurationBuilder : IHasName, IHasDescription
     /// <inheritdoc />
     public string Description { get; private set; } = string.Empty;
 
-    /// <summary>Gets the metadata dictionary for this configuration.</summary>
+    /// <summary>
+    /// Gets the metadata dictionary for this configuration.
+    /// </summary>
     public IReadOnlyDictionary<string, object> Metadata => _metadata;
 
     /// <summary>
@@ -33,11 +33,7 @@ public class ConfigurationBuilder : IHasName, IHasDescription
     /// <returns>The builder instance for method chaining.</returns>
     public ConfigurationBuilder WithName(string name)
     {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            throw new ArgumentException("Parameter cannot be null, empty, or white-space.", nameof(name));
-        }
-
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
         Name = name;
         return this;
     }
@@ -49,11 +45,7 @@ public class ConfigurationBuilder : IHasName, IHasDescription
     /// <returns>The builder instance for method chaining.</returns>
     public ConfigurationBuilder WithDescription(string description)
     {
-        if (string.IsNullOrWhiteSpace(description))
-        {
-            throw new ArgumentException("Parameter cannot be null, empty, or white-space.", nameof(description));
-        }
-
+        ArgumentException.ThrowIfNullOrWhiteSpace(description);
         Description = description;
         return this;
     }
@@ -66,6 +58,7 @@ public class ConfigurationBuilder : IHasName, IHasDescription
     /// <returns>The builder instance for method chaining.</returns>
     public ConfigurationBuilder WithMetadata(string key, object value)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
         ArgumentNullException.ThrowIfNull(value);
 
         _metadata[key] = value;
