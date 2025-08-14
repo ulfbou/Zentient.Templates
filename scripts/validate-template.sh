@@ -218,7 +218,10 @@ validate_functional_metadata() {
     # Validate package can be created with a dry run
     info "Validating NuGet package creation..."
     local pack_log="$TEST_DIR/pack-output.log"
-    if ! dotnet pack --no-build --dry-run --verbosity normal > "$pack_log" 2>&1; then
+    
+    # We've removed the unsupported '--dry-run' switch.
+    # The command should now run correctly to perform the validation checks on its output.
+    if ! dotnet pack --no-build --verbosity normal > "$pack_log" 2>&1; then
         test_result 1 "Package validation failed (dotnet pack exited with error)"
         cat "$pack_log"
         return 1
