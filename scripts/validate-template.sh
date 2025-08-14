@@ -219,9 +219,8 @@ validate_functional_metadata() {
     info "Validating NuGet package creation..."
     local pack_log="$TEST_DIR/pack-output.log"
     
-    # We've removed the unsupported '--dry-run' switch.
-    # The command should now run correctly to perform the validation checks on its output.
-    if ! dotnet pack --no-build --verbosity normal > "$pack_log" 2>&1; then
+    # NEW FIX: Explicitly specify PackageDescription to resolve the MSB4019 error.
+    if ! dotnet pack --no-build --verbosity normal -p:PackageDescription="Test project description for validation" > "$pack_log" 2>&1; then
         test_result 1 "Package validation failed (dotnet pack exited with error)"
         cat "$pack_log"
         return 1
@@ -243,28 +242,6 @@ validate_functional_metadata() {
 
     test_result 0 "NuGet metadata validation"
     success "Template '$TEMPLATE_SHORT_NAME' validation successful"
-}
-
-# --- Main Execution ---
-main() {
-    setup_environment
-    validate_metadata
-    validate_functional_metadata
-    generate_report
-    
-    # Clean up
-    step "Cleaning up temporary files..."
-    rm -rf "$TEMP_DIR/$TEMPLATE_SHORT_NAME"
-    
-    echo ""
-    echo "$(cyan '==================================================================')"
-    if [[ $TESTS_FAILED -eq 0 ]]; then
-        echo "$(bold "$(green "✅ ALL METADATA TESTS PASSED for '$TEMPLATE_DIR'")")"
-        exit 0
-    else
-        echo "$(bold "$(red "❌ METADATA TESTS FAILED for '$TEMPLATE_DIR'")")"
-        exit 1
-    fi
 }
 
 # The 'generate_report' function is the same as before.
@@ -302,6 +279,28 @@ generate_report() {
 
     log "Report generated: $report_file"
     cd "$REPO_ROOT"
+}
+
+# The main execution block is the same as before.
+main() {
+    setup_environment
+    validate_metadata
+    validate_functional_metadata
+    generate_report
+    
+    # Clean up
+    step "Cleaning up temporary files..."
+    rm -rf "$TEMP_DIR/$TEMPLATE_SHORT_NAME"
+    
+    echo ""
+    echo "$(cyan '==================================================================')"
+    if [[ $TESTS_FAILED -eq 0 ]]; then
+        echo "$(bold "$(green "✅ ALL METADATA TESTS PASSED for '$TEMPLATE_DIR'")")"
+        exit 0
+    else
+        echo "$(bold "$(red "❌ METADATA TESTS FAILED for '$TEMPLATE_DIR'")")"
+        exit 1
+    fi
 }
 
 main
