@@ -158,6 +158,12 @@ validate_functional_metadata() {
     
     step "Starting functional metadata validation for '$TEMPLATE_SHORT_NAME'"
 
+    # Install the template
+    cd "$REPO_ROOT"
+    info "Installing template '$TEMPLATE_SHORT_NAME' from: $TEMPLATE_DIR"
+    dotnet new install "$TEMPLATE_DIR" --force >> "$LOG_FILE" 2>&1
+    cd "$TEST_DIR"
+
     # Create project from template with metadata arguments
     info "Creating project from template '$TEMPLATE_SHORT_NAME'..."
     if ! dotnet new "$TEMPLATE_SHORT_NAME" \
