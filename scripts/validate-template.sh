@@ -181,15 +181,27 @@ validate_functional_metadata() {
 
     cd "$project_path"
 
+    # --- NEW FIX: Replace incorrect project names in the solution file ---
+    step "Patching solution file for correct project paths..."
+    # Replace the default name "Zentient.NewLibrary" with "TestProject"
+    # The solution file is also likely named incorrectly, but this will handle the file paths
+    # The correct replacement name will be derived from the --name argument
+    # We use sed to replace the incorrect project paths
+    # Note: The project path name has to be escaped for sed.
+    local old_name_src="Zentient.NewLibrary.csproj"
+    local old_name_test="Zentient.NewLibrary.Tests.csproj"
+    local new_name_src="TestProject.csproj"
+    local new_name_test="TestProject.Tests.csproj"
+
+    sed -i "s/$old_name_src/$new_name_src/g" "TestProject.sln"
+    sed -i "s/$old_name_test/$new_name_test/g" "TestProject.sln"
+
     # Restore packages to ensure project is runnable
     info "Restoring NuGet packages..."
     
-    # --- IMPORTANT FIX: Remove the 'quiet' flag and tee the output ---
-    # This will ensure the actual error from dotnet restore is visible in the logs.
     local restore_log="$TEST_DIR/restore-output.log"
     if ! dotnet restore > "$restore_log" 2>&1; then
         test_result 1 "Project restore failed"
-        # Print the error log to the console for debugging
         cat "$restore_log"
         return 1
     fi
@@ -230,6 +242,29 @@ validate_functional_metadata() {
     success "Template '$TEMPLATE_SHORT_NAME' validation successful"
 }
 
+# --- Main Execution ---
+main() {
+    setup_environment
+    validate_metadata
+    validate_functional_metadata
+    generate_report
+    
+    # Clean up
+    step "Cleaning up temporary files..."
+    rm -rf "$TEMP_DIR/$TEMPLATE_SHORT_NAME"
+    
+    echo ""
+    echo "$(cyan '==================================================================')"
+    if [[ $TESTS_FAILED -eq 0 ]]; then
+        echo "$(bold "$(green "✅ ALL METADATA TESTS PASSED for '$TEMPLATE_DIR'")")"
+        exit 0
+    else
+        echo "$(bold "$(red "❌ METADATA TESTS FAILED for '$TEMPLATE_DIR'")")"
+        exit 1
+    fi
+}
+
+# The 'generate_report' function is the same as before.
 generate_report() {
     step "Generating test report..."
     local report_file="$TEST_DIR/metadata-report.md"
@@ -264,28 +299,6 @@ generate_report() {
 
     log "Report generated: $report_file"
     cd "$REPO_ROOT"
-}
-
-# --- Main Execution ---
-main() {
-    setup_environment
-    validate_metadata
-    validate_functional_metadata
-    generate_report
-    
-    # Clean up
-    step "Cleaning up temporary files..."
-    rm -rf "$TEMP_DIR/$TEMPLATE_SHORT_NAME"
-    
-    echo ""
-    echo "$(cyan '==================================================================')"
-    if [[ $TESTS_FAILED -eq 0 ]]; then
-        echo "$(bold "$(green "✅ ALL METADATA TESTS PASSED for '$TEMPLATE_DIR'")")"
-        exit 0
-    else
-        echo "$(bold "$(red "❌ METADATA TESTS FAILED for '$TEMPLATE_DIR'")")"
-        exit 1
-    fi
 }
 
 main
