@@ -1,6 +1,6 @@
 #!/bin/bash
-# Zentient Templates - Single Template Metadata Validation Script (validate-template-metadata.sh)
-# This script validates that a single template generates projects with proper NuGet metadata.
+# Zentient Templates - Single Template Validation Script (validate-template.sh)
+# This script performs both static metadata and functional package validation for a single template.
 
 # Exit immediately if a command exits with a non-zero status.
 set -e
@@ -12,8 +12,8 @@ set -x
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 TEMP_DIR="/tmp/template-validation"
-# Initialize LOG_FILE to an empty string so the log() function can check it
 LOG_FILE=""
+TEMPLATE_DIR=""
 
 # --- Color and Logging Functions ---
 red() { echo -e "\033[31m$1\033[0m"; }
@@ -58,39 +58,35 @@ test_result() {
 
 # --- Argument Parsing and Usage ---
 usage() {
-    echo "Usage: $0 --template <template-short-name>"
-    echo "Example: $0 --template zentient-lib"
+    echo "Usage: $0 --template-dir <template-directory-path>"
+    echo "Example: $0 --template-dir templates/zentient-library-template"
     exit 1
 }
 
 # Parse command line arguments
-TEMPLATE_SHORT_NAME=""
 while [[ "$#" -gt 0 ]]; do
     case $1 in
-        --template) TEMPLATE_SHORT_NAME="$2"; shift ;;
+        --template-dir) TEMPLATE_DIR="$2"; shift ;;
         *) echo "Unknown parameter passed: $1"; exit 1 ;;
     esac
     shift
 done
 
-if [[ -z "$TEMPLATE_SHORT_NAME" ]]; then
+if [[ -z "$TEMPLATE_DIR" ]]; then
     usage
 fi
 
-echo ""
-echo "$(bold "$(cyan "🧪 ZENTIENT TEMPLATES - METADATA VALIDATION FOR '$TEMPLATE_SHORT_NAME'")")"
-echo "$(cyan '==================================================================')"
-echo ""
+# Set a log file path based on the template directory name
+TEMPLATE_SHORT_NAME=$(basename "$TEMPLATE_DIR")
+LOG_FILE="$TEMP_DIR/$TEMPLATE_SHORT_NAME/metadata-validation-$(date +%Y%m%d-%H%M%S).log"
 
 # --- Core Validation Logic ---
 setup_environment() {
-    # We must ensure the directory exists before the first call to log()
     mkdir -p "$TEMP_DIR/$TEMPLATE_SHORT_NAME"
     
-    step "Setting up test environment for template '$TEMPLATE_SHORT_NAME'..."
+    step "Setting up test environment for template '$TEMPLATE_DIR'..."
     TEST_DIR="$TEMP_DIR/$TEMPLATE_SHORT_NAME"
-    LOG_FILE="$TEST_DIR/metadata-validation-$(date +%Y%m%d-%H%M%S).log"
-
+    
     rm -rf "$TEST_DIR"
     mkdir -p "$TEST_DIR"
     cd "$TEST_DIR"
@@ -99,21 +95,77 @@ setup_environment() {
     info "Log file: $LOG_FILE"
 }
 
-validate_template() {
-    local template_name="$1"
+validate_metadata() {
+    step "Starting static metadata validation for '$TEMPLATE_DIR'..."
+    local template_json_path="$REPO_ROOT/$TEMPLATE_DIR/.template.config/template.json"
+
+    # Check if the template directory and json file exists
+    if [[ ! -d "$REPO_ROOT/$TEMPLATE_DIR" ]]; then
+        test_result 1 "Template directory not found"
+        return 1
+    fi
+    test_result 0 "Template directory found"
+    
+    if [[ ! -f "$template_json_path" ]]; then
+        test_result 1 "template.json not found"
+        return 1
+    fi
+    test_result 0 "template.json found"
+
+    # Use jq to read and validate metadata fields
+    info "Validating required fields in template.json..."
+    
+    local shortName=$(cat "$template_json_path" | jq -r '.shortName')
+    if [[ -z "$shortName" || "$shortName" == "null" ]]; then
+        test_result 1 "Required field 'shortName' is missing or empty."
+    else
+        test_result 0 "shortName: '$shortName' is valid."
+    fi
+
+    local name=$(cat "$template_json_path" | jq -r '.name')
+    if [[ -z "$name" || "$name" == "null" ]]; then
+        test_result 1 "Required field 'name' is missing or empty."
+    else
+        test_result 0 "name: '$name' is valid."
+    fi
+    
+    local author=$(cat "$template_json_path" | jq -r '.author')
+    if [[ -z "$author" || "$author" == "null" ]]; then
+        test_result 1 "Required field 'author' is missing or empty."
+    else
+        test_result 0 "author: '$author' is valid."
+    fi
+
+    local identity=$(cat "$template_json_path" | jq -r '.identity')
+    if [[ -z "$identity" || "$identity" == "null" ]]; then
+        test_result 1 "Required field 'identity' is missing or empty."
+    else
+        test_result 0 "identity: '$identity' is valid."
+    fi
+    
+    local sourceName=$(cat "$template_json_path" | jq -r '.sourceName')
+    if [[ -z "$sourceName" || "$sourceName" == "null" ]]; then
+        test_result 1 "Required field 'sourceName' is missing or empty."
+    else
+        test_result 0 "sourceName: '$sourceName' is valid."
+    fi
+}
+
+validate_functional_metadata() {
+    local template_json_path="$REPO_ROOT/$TEMPLATE_DIR/.template.config/template.json"
+    local TEMPLATE_SHORT_NAME=$(cat "$template_json_path" | jq -r '.shortName')
     local project_path="$TEST_DIR/TestProject"
     
-    step "Validating template: '$template_name'"
+    step "Starting functional metadata validation for '$TEMPLATE_SHORT_NAME'"
 
     # Create project from template with metadata arguments
-    info "Creating project from template '$template_name'..."
-    if ! dotnet new "$template_name" \
+    info "Creating project from template '$TEMPLATE_SHORT_NAME'..."
+    if ! dotnet new "$TEMPLATE_SHORT_NAME" \
         --name "TestProject" \
         --Author "Test Author" \
         --Company "Test Company" \
         --Description "Test project description for validation" \
         --RepositoryUrl "https://github.com/test/test-project" \
-        --Tags "test;validation;template" \
         --output "$project_path" \
         --force >> "$LOG_FILE" 2>&1; then
         test_result 1 "Template creation failed"
@@ -155,9 +207,7 @@ validate_template() {
     fi
 
     test_result 0 "NuGet metadata validation"
-    success "Template '$template_name' validation successful"
-
-    cd "$TEMP_DIR" > /dev/null
+    success "Template '$TEMPLATE_SHORT_NAME' validation successful"
 }
 
 generate_report() {
@@ -199,7 +249,8 @@ generate_report() {
 # --- Main Execution ---
 main() {
     setup_environment
-    validate_template "$TEMPLATE_SHORT_NAME"
+    validate_metadata
+    validate_functional_metadata
     generate_report
     
     # Clean up
@@ -209,10 +260,10 @@ main() {
     echo ""
     echo "$(cyan '==================================================================')"
     if [[ $TESTS_FAILED -eq 0 ]]; then
-        echo "$(bold "$(green "✅ ALL METADATA TESTS PASSED for '$TEMPLATE_SHORT_NAME'")")"
+        echo "$(bold "$(green "✅ ALL METADATA TESTS PASSED for '$TEMPLATE_DIR'")")"
         exit 0
     else
-        echo "$(bold "$(red "❌ METADATA TESTS FAILED for '$TEMPLATE_SHORT_NAME'")")"
+        echo "$(bold "$(red "❌ METADATA TESTS FAILED for '$TEMPLATE_DIR'")")"
         exit 1
     fi
 }

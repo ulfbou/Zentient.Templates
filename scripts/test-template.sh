@@ -58,24 +58,27 @@ test_result() {
 
 # --- Argument Parsing and Usage ---
 usage() {
-    echo "Usage: $0 --template <template-short-name>"
-    echo "Example: $0 --template zentient-lib"
+    echo "Usage: $0 --template-dir <template-directory-path>"
+    echo "Example: $0 --template-dir templates/zentient-library-template"
     exit 1
 }
 
 # Parse command line arguments
-TEMPLATE_SHORT_NAME=""
+TEMPLATE_DIR=""
 while [[ "$#" -gt 0 ]]; do
     case $1 in
-        --template) TEMPLATE_SHORT_NAME="$2"; shift ;;
+        --template-dir) TEMPLATE_DIR="$2"; shift ;;
         *) echo "Unknown parameter passed: $1"; exit 1 ;;
     esac
     shift
 done
 
-if [[ -z "$TEMPLATE_SHORT_NAME" ]]; then
+if [[ -z "$TEMPLATE_DIR" ]]; then
     usage
 fi
+
+# Extract the template's short name from its directory name for log file paths
+TEMPLATE_SHORT_NAME=$(basename "$TEMPLATE_DIR")
 
 echo ""
 echo "$(bold "$(cyan "🧪 ZENTIENT TEMPLATES - VALIDATION FOR '$TEMPLATE_SHORT_NAME'")")"
@@ -84,10 +87,10 @@ echo ""
 
 # --- Core Validation Logic ---
 setup_environment() {
-    # We must ensure the directory exists before the first call to log()
+    # Ensure the parent directory for all logs and test artifacts exists
     mkdir -p "/tmp/zentient-template-validation/$TEMPLATE_SHORT_NAME"
 
-    step "Setting up test environment for template '$TEMPLATE_SHORT_NAME'..."
+    step "Setting up test environment for template at '$TEMPLATE_DIR'..."
     TEST_DIR="/tmp/zentient-template-validation/$TEMPLATE_SHORT_NAME"
     LOG_FILE="$TEST_DIR/validation-$(date +%Y%m%d-%H%M%S).log"
 
@@ -110,21 +113,32 @@ check_prerequisites() {
     local dotnet_version=$(dotnet --version)
     info ".NET SDK version: $dotnet_version"
 
-    local template_path="$REPO_ROOT/templates/$TEMPLATE_SHORT_NAME"
-    if [[ ! -d "$template_path" ]]; then
-        error "Template directory not found: $template_path"
+    if [[ ! -d "$REPO_ROOT/$TEMPLATE_DIR" ]]; then
+        error "Template directory not found: $REPO_ROOT/$TEMPLATE_DIR"
+        exit 1
+    fi
+
+    local template_json_path="$REPO_ROOT/$TEMPLATE_DIR/.template.config/template.json"
+    if [[ ! -f "$template_json_path" ]]; then
+        error "template.json not found in template directory: $template_json_path"
+        exit 1
+    fi
+
+    # Read the shortName from template.json using jq
+    local TEMPLATE_SHORT_NAME=$(cat "$template_json_path" | jq -r '.shortName')
+    if [[ -z "$TEMPLATE_SHORT_NAME" ]]; then
+        error "Could not find 'shortName' in template.json"
         exit 1
     fi
 
     cd "$REPO_ROOT"
-    info "Installing template '$TEMPLATE_SHORT_NAME' from: $template_path"
-    dotnet new install "$template_path" --force >> "$LOG_FILE" 2>&1
+    info "Installing template '$TEMPLATE_SHORT_NAME' from: $TEMPLATE_DIR"
+    dotnet new install "$TEMPLATE_DIR" --force >> "$LOG_FILE" 2>&1
     test_result $? "Template installation: $TEMPLATE_SHORT_NAME"
     cd "$TEST_DIR"
 }
 
-# Re-usable function to fix solution references if needed (e.g. for projects that are not directly named
-# with the template name but rather are just templates).
+# Re-usable function to fix solution references if needed
 fix_solution_references() {
     local project_name="$1"
     step "Fixing solution file references for '$project_name'..."
@@ -136,7 +150,7 @@ fix_solution_references() {
         return 0
     fi
     info "Processing solution file: $sln_file"
-    
+
     if grep -q "Zentient" "$sln_file"; then
         warning "Found template placeholder references in solution file. Attempting to fix..."
         sed -i "s/Zentient.NewLibrary/$project_name/g" "$sln_file"
@@ -151,7 +165,8 @@ fix_solution_references() {
 test_template_run() {
     local project_name="$1"
     local template_name="$2"
-    local expected_files=("${@:3}")
+    local source_name="$3"
+    local expected_files=("${@:4}")
 
     step "Creating new project with template '$template_name'..."
     mkdir -p "$project_name"
@@ -165,8 +180,17 @@ test_template_run() {
         return 1
     fi
 
-    # Fix references
-    fix_solution_references "$project_name"
+    # Fix references by replacing the sourceName with the project name
+    step "Fixing solution file references..."
+    local sln_file
+    sln_file=$(find . -maxdepth 1 -name "*.sln" | head -1)
+
+    if [[ -n "$sln_file" ]]; then
+        sed -i "s/$source_name/$project_name/g" "$sln_file"
+        test_result 0 "Solution file references fixed"
+    else
+        warning "No solution file found to fix references."
+    fi
 
     # Structure check
     info "Validating project structure..."
@@ -201,12 +225,16 @@ test_template_run() {
 
 # The main dispatcher function
 run_tests_for_template() {
+    local template_json_path="$REPO_ROOT/$TEMPLATE_DIR/.template.config/template.json"
+    local TEMPLATE_SHORT_NAME=$(cat "$template_json_path" | jq -r '.shortName')
+    local TEMPLATE_SOURCE_NAME=$(cat "$template_json_path" | jq -r '.sourceName')
+
     case "$TEMPLATE_SHORT_NAME" in
         "zentient-lib")
-            test_template_run "MyTestLib" "zentient-lib" "MyTestLib.sln" "src/MyTestLib.csproj" "tests/MyTestLib.Tests.csproj" "README.md" "Directory.Build.props"
+            test_template_run "MyTestLib" "$TEMPLATE_SHORT_NAME" "$TEMPLATE_SOURCE_NAME" "MyTestLib.sln" "src/MyTestLib.csproj" "tests/MyTestLib.Tests.csproj" "README.md" "Directory.Build.props"
             ;;
         "zentient")
-            test_template_run "MyTestProject" "zentient" "MyTestProject.sln" "src/MyTestProject.csproj" "README.md" "Directory.Build.props"
+            test_template_run "MyTestProject" "$TEMPLATE_SHORT_NAME" "$TEMPLATE_SOURCE_NAME" "MyTestProject.sln" "src/MyTestProject.csproj" "README.md" "Directory.Build.props"
             ;;
         *)
             error "Unknown template short name: '$TEMPLATE_SHORT_NAME'"
