@@ -183,10 +183,24 @@ validate_functional_metadata() {
 
     # Restore packages to ensure project is runnable
     info "Restoring NuGet packages..."
-    if ! dotnet restore --verbosity quiet >> "$LOG_FILE" 2>&1; then
+    
+    # --- IMPORTANT FIX: Remove the 'quiet' flag and tee the output ---
+    # This will ensure the actual error from dotnet restore is visible in the logs.
+    local restore_log="$TEST_DIR/restore-output.log"
+    if ! dotnet restore > "$restore_log" 2>&1; then
         test_result 1 "Project restore failed"
+        # Print the error log to the console for debugging
+        cat "$restore_log"
         return 1
     fi
+
+    # Check for errors in the log file
+    if grep -qE "error|fail" "$restore_log"; then
+        test_result 1 "Project restore failed (errors found in log)"
+        cat "$restore_log"
+        return 1
+    fi
+
     test_result 0 "Project restore"
 
     # Validate package can be created with a dry run
