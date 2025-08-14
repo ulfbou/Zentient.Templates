@@ -1,0 +1,61 @@
+---
+# Path: .github/workflows/ci.yml
+name: CI - Template Validation
+
+on:
+  push:
+    branches: [ 'feature/*', 'develop' ]
+  pull_request:
+    branches: [ 'main', 'develop' ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-all-templates:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        template-name:
+          - zentient-lib
+          # - zentient
+        dotnet-version:
+          # - '6.0.x'
+          # - '8.0.x'
+          - '9.0.x'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Make validation scripts executable
+        run: |
+          chmod +x scripts/test-templates.sh
+          chmod +x scripts/validate-nuget-metadata.sh
+
+      - name: Run template validation
+        run: |
+          ./scripts/test-templates.sh --template ${{ matrix.template-name }}
+          ./scripts/validate-nuget-metadata.sh --template ${{ matrix.template-name }}
+
+      - name: Upload validation artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-logs-${{ matrix.template-name }}-${{ matrix.dotnet-version }}
+          path: /tmp/zentient-template-validation/
