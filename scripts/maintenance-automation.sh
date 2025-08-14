@@ -182,7 +182,7 @@ task_cross_platform_testing() {
     
     # Check for PowerShell and Bash test scripts
     local test_scripts=(
-        "test-templates.sh:Bash testing script"
+        "test-template.sh:Bash testing script"
         "test-templates.ps1:PowerShell testing script"
     )
     
@@ -393,12 +393,12 @@ task_comprehensive_testing() {
     step "Setting up comprehensive testing..."
     
     # Check for test scripts
-    if [[ -f "$SCRIPT_DIR/test-templates.sh" ]]; then
+    if [[ -f "$SCRIPT_DIR/test-template.sh" ]]; then
         success "Found comprehensive test script"
-        chmod +x "$SCRIPT_DIR/test-templates.sh"
+        chmod +x "$SCRIPT_DIR/test-template.sh"
         
         # Validate test script functionality
-        if grep -q "test_library_template\|test_project_template" "$SCRIPT_DIR/test-templates.sh"; then
+        if grep -q "test_library_template\|test_project_template" "$SCRIPT_DIR/test-template.sh"; then
             success "Test script contains comprehensive template testing"
         else
             warning "Test script may be incomplete"
@@ -572,7 +572,7 @@ generate_maintenance_report() {
 ## Script Locations
 
 - **Main Automation:** \`scripts/maintenance-automation.sh\`
-- **Template Testing:** \`scripts/test-templates.sh\` and \`scripts/test-templates.ps1\`
+- **Template Testing:** \`scripts/test-template.sh\` and \`scripts/test-templates.ps1\`
 - **NuGet Validation:** \`scripts/validate-nuget-metadata.sh\`
 - **Documentation:** \`scripts/generate-docs.sh\`
 
@@ -586,7 +586,7 @@ generate_maintenance_report() {
 ### Run Template Testing
 \`\`\`bash
 # Linux/macOS
-./scripts/test-templates.sh
+./scripts/test-template.sh
 
 # Windows PowerShell
 .\\scripts\\test-templates.ps1

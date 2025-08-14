@@ -1,6 +1,6 @@
 ﻿#!/bin/bash
 
-# Publish Zentient templates to NuGet (publish-templates.sh)
+# Publish Zentient templates to NuGet (publish-template.sh)
 set -e
 
 # Get the version from the environment variable
