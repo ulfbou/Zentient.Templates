@@ -1,5 +1,11 @@
 <Project>
 
+  <!-- Package Metadata -->
+  <PropertyGroup Label="PackageMetadataTargets">
+    <PackageAuthors>LIBRARY_AUTHOR</PackageAuthors>
+    <PackageDescription>LIBRARY_DESCRIPTION</PackageDescription>
+  </PropertyGroup>
+
   <Target Name="ValidatePackageConfiguration" BeforeTargets="GenerateNuspec" Condition="'$(IsPackable)' == 'true'">
     <Message Text="Validating package configuration..." Importance="high" />
     

@@ -39,7 +39,7 @@
           "description": ".NET 8.0"
         },
         {
-          "choice": "net7.0", 
+          "choice": "net7.0",
           "description": ".NET 7.0"
         },
         {
@@ -67,7 +67,7 @@
     },
     "Author": {
       "type": "parameter",
-      "dataType": "string", 
+      "dataType": "string",
       "description": "The author of the library",
       "defaultValue": "Zentient",
       "replaces": "LIBRARY_AUTHOR"
@@ -100,14 +100,14 @@
       "defaultValue": "true"
     },
     "EnableTesting": {
-      "type": "parameter", 
+      "type": "parameter",
       "dataType": "bool",
       "description": "Include comprehensive testing setup",
       "defaultValue": "true"
     },
     "EnableQuality": {
       "type": "parameter",
-      "dataType": "bool", 
+      "dataType": "bool",
       "description": "Enable quality analysis and code standards",
       "defaultValue": "true"
     },
@@ -256,7 +256,7 @@
           "condition": "(!EnableTesting)",
           "exclude": [
             "tests/**",
-            "Directory.Test.props", 
+            "Directory.Test.props",
             "Directory.Test.targets"
           ]
         },
