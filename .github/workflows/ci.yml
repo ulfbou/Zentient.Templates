@@ -1,4 +1,4 @@
-# Path: .github/workflows/ci.yml
+# .github/workflows/ci.yml
 name: CI - Template Validation
 
 on:
@@ -17,13 +17,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        template-name:
-          - zentient-lib
-          # - zentient
+        # The matrix now iterates over the template directories.
+        # Add new directories here for new templates.
+        template-dir:
+          - zentient-library-template
+          # - zentient-project-template
         dotnet-version:
-          # - '6.0.x'
-          # - '8.0.x'
           - '9.0.x'
+          # - '8.0.x'
+          # - '6.0.x'
 
     steps:
       - name: Checkout repository
@@ -42,20 +44,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      - name: Make validation scripts executable
-        run: |
-          chmod +x scripts/test-template.sh
-          chmod +x scripts/validate-template-metadata.sh
+      - name: Install jq for JSON parsing
+        run: sudo apt-get update && sudo apt-get install -y jq
 
-      - name: List template directory contents
-        run: |
-          ls -R scripts/
-          ls -R templates/
+      - name: Make validation script executable
+        run: chmod +x scripts/validate-template.sh
 
-      - name: Run template validation
-        run: |
-          ./scripts/test-template.sh --template ${{ matrix.template-name }}
-          ./scripts/validate-template-metadata.sh --template ${{ matrix.template-name }}
+      - name: Run comprehensive template validation
+        run: ./scripts/validate-template.sh --template-dir templates/${{ matrix.template-dir }}
         env:
           ACTIONS_STEP_DEBUG: true
           ACTIONS_RUNNER_DEBUG: true
@@ -64,5 +60,5 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: validation-logs-${{ matrix.template-name }}-${{ matrix.dotnet-version }}
-          path: /tmp/zentient-template-validation/
+          name: validation-logs-${{ matrix.template-dir }}-${{ matrix.dotnet-version }}
+          path: /tmp/template-validation/
