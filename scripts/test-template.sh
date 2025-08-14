@@ -11,9 +11,9 @@ set -x
 # --- Configuration and Environment Setup ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
-# Initialize these to prevent "tee: '': No such file or directory" error before setup_environment is called.
 TEST_DIR=""
-LOG_FILE="/tmp/zentient-template-validation/pre-setup-log.log"
+# Initialize LOG_FILE to an empty string so the log() function can check it
+LOG_FILE=""
 
 # --- Color and Logging Functions ---
 red() { echo -e "\033[31m$1\033[0m"; }
@@ -84,6 +84,9 @@ echo ""
 
 # --- Core Validation Logic ---
 setup_environment() {
+    # We must ensure the directory exists before the first call to log()
+    mkdir -p "/tmp/zentient-template-validation/$TEMPLATE_SHORT_NAME"
+
     step "Setting up test environment for template '$TEMPLATE_SHORT_NAME'..."
     TEST_DIR="/tmp/zentient-template-validation/$TEMPLATE_SHORT_NAME"
     LOG_FILE="$TEST_DIR/validation-$(date +%Y%m%d-%H%M%S).log"

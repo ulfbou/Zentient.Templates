@@ -5,10 +5,15 @@
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
+# Enable verbose debugging of the script itself
+set -x
+
 # --- Configuration and Environment Setup ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 TEMP_DIR="/tmp/template-validation"
+# Initialize LOG_FILE to an empty string so the log() function can check it
+LOG_FILE=""
 
 # --- Color and Logging Functions ---
 red() { echo -e "\033[31m$1\033[0m"; }
@@ -18,9 +23,14 @@ blue() { echo -e "\033[34m$1\033[0m"; }
 cyan() { echo -e "\033[36m$1\033[0m"; }
 bold() { echo -e "\033[1m$1\033[0m"; }
 
+# Check if LOG_FILE is set before using tee
 log() {
     local msg="$(date '+%H:%M:%S') $1"
-    echo "$msg" | tee -a "$LOG_FILE"
+    if [[ -n "$LOG_FILE" ]]; then
+        echo "$msg" | tee -a "$LOG_FILE"
+    else
+        echo "$msg"
+    fi
 }
 step() { log "$(cyan "🔄 $1")"; }
 success() { log "$(green "✅ $1")"; }
@@ -74,6 +84,9 @@ echo ""
 
 # --- Core Validation Logic ---
 setup_environment() {
+    # We must ensure the directory exists before the first call to log()
+    mkdir -p "$TEMP_DIR/$TEMPLATE_SHORT_NAME"
+    
     step "Setting up test environment for template '$TEMPLATE_SHORT_NAME'..."
     TEST_DIR="$TEMP_DIR/$TEMPLATE_SHORT_NAME"
     LOG_FILE="$TEST_DIR/metadata-validation-$(date +%Y%m%d-%H%M%S).log"
