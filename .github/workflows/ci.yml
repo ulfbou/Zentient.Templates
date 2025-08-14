@@ -46,12 +46,12 @@ jobs:
       - name: Make validation scripts executable
         run: |
           chmod +x scripts/test-template.sh
-          chmod +x scripts/validate-nuget-metadata.sh
+          chmod +x scripts/validate-template-metadata.sh
 
       - name: Run template validation
         run: |
           ./scripts/test-template.sh --template ${{ matrix.template-name }}
-          ./scripts/validate-nuget-metadata.sh --template ${{ matrix.template-name }}
+          ./scripts/validate-template-metadata.sh --template ${{ matrix.template-name }}
 
       - name: Upload validation artifacts
         if: failure()

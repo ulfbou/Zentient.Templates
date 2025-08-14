@@ -94,16 +94,16 @@ task_nuget_validation() {
     step "Setting up NuGet metadata validation..."
     
     # Check if validation script exists
-    if [[ -f "$SCRIPT_DIR/validate-nuget-metadata.sh" ]]; then
+    if [[ -f "$SCRIPT_DIR/validate-template-metadata.sh" ]]; then
         success "NuGet validation script exists"
         
         # Make it executable
-        chmod +x "$SCRIPT_DIR/validate-nuget-metadata.sh"
+        chmod +x "$SCRIPT_DIR/validate-template-metadata.sh"
         success "Made validation script executable"
         
         # Test the validation script
         step "Testing NuGet validation..."
-        if "$SCRIPT_DIR/validate-nuget-metadata.sh" --dry-run 2>/dev/null; then
+        if "$SCRIPT_DIR/validate-template-metadata.sh" --dry-run 2>/dev/null; then
             success "NuGet validation script works correctly"
         else
             warning "NuGet validation script may need adjustment"
@@ -440,9 +440,9 @@ run_validation_tests() {
     step "Validating all implementations..."
     
     # Test NuGet validation if script exists
-    if [[ -f "$SCRIPT_DIR/validate-nuget-metadata.sh" && -x "$SCRIPT_DIR/validate-nuget-metadata.sh" ]]; then
+    if [[ -f "$SCRIPT_DIR/validate-template-metadata.sh" && -x "$SCRIPT_DIR/validate-template-metadata.sh" ]]; then
         step "Running NuGet validation test..."
-        if "$SCRIPT_DIR/validate-nuget-metadata.sh" --quick-test 2>/dev/null; then
+        if "$SCRIPT_DIR/validate-template-metadata.sh" --quick-test 2>/dev/null; then
             success "NuGet validation test passed"
         else
             warning "NuGet validation test had issues"
@@ -573,7 +573,7 @@ generate_maintenance_report() {
 
 - **Main Automation:** \`scripts/maintenance-automation.sh\`
 - **Template Testing:** \`scripts/test-template.sh\` and \`scripts/test-templates.ps1\`
-- **NuGet Validation:** \`scripts/validate-nuget-metadata.sh\`
+- **NuGet Validation:** \`scripts/validate-template-metadata.sh\`
 - **Documentation:** \`scripts/generate-docs.sh\`
 
 ## Usage Instructions
@@ -594,7 +594,7 @@ generate_maintenance_report() {
 
 ### Validate NuGet Metadata
 \`\`\`bash
-./scripts/validate-nuget-metadata.sh
+./scripts/validate-template-metadata.sh
 \`\`\`
 
 ### Generate Documentation
