@@ -9,7 +9,13 @@ Usage:
 <Project>
 
   <!-- Core Project Configuration -->
-  <PropertyGroup>
+  <PropertyGroup Label="Core Project Configuration">
+
+    <!-- Library metadata -->
+    <LibraryAuthor>LIBRARY_AUTHOR</LibraryAuthor>
+    <LibraryCompany>LIBRARY_COMPANY</LibraryCompany>
+    <LibraryDescription>LIBRARY_DESCRIPTION</LibraryDescription>
+
     <!-- Project metadata -->
     <Product>Zentient Framework</Product>
 

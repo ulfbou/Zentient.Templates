@@ -61,3 +61,38 @@ jobs:
         with:
           name: validation-logs-${{ matrix.template-dir }}-${{ matrix.dotnet-version }}
           path: /tmp/template-validation/
+
+  # # New job to validate documentation
+  # validate-documentation:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
+
+  #     - name: Setup .NET SDK
+  #       uses: actions/setup-dotnet@v4
+  #       with:
+  #         dotnet-version: '9.0.x'
+      
+  #     - name: Install DocFX
+  #       run: dotnet tool install -g docfx
+
+  #     - name: Build project to generate XML docs
+  #       # This is a critical prerequisite for the documentation script
+  #       run: dotnet build --configuration Release /p:GenerateDocumentationFile=true
+      
+  #     - name: Make documentation script executable
+  #       run: chmod +x scripts/generate-docs.sh
+      
+  #     - name: Run comprehensive documentation validation
+  #       # Use the 'generate' command to run all validation and generation steps
+  #       run: ./scripts/generate-docs.sh generate
+      
+  #     - name: Upload documentation artifacts
+  #       # Upload the generated documentation site and report for review
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: generated-documentation
+  #         path: |
+  #           _site/
+  #           documentation-report.md

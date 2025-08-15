@@ -239,6 +239,21 @@
           }
         }
       ]
+    },
+    "**/*.csproj": {
+      "operations": [
+        { "type": "replace" }
+      ]
+    },
+    "**/*.props": {
+      "operations": [
+        { "type": "replace" }
+      ]
+    },
+    "**/*.targets": {
+      "operations": [
+        { "type": "replace" }
+      ]
     }
   },
   "sources": [

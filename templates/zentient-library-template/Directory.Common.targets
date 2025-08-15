@@ -1,4 +1,11 @@
-<!-- Directory.Common.targets -->
+<!--
+  Zentient Library Template - Directory.Common.targets
+  This file defines common properties and targets for Zentient library projects.
+  It includes configurations for test project detection, output type settings, and analyzer configurations.
+  Usage:
+  - Place this file in the root of your library project.
+  - Customize properties as needed for your specific project requirements.
+-->
 <Project>
 
   <!-- Common Test Project Detection -->
