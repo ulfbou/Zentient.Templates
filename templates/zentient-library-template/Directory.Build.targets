@@ -1,3 +1,11 @@
+<!--
+ Zentient Library Template - Directory.Build.targets
+ This file defines common build targets and properties for Zentient library projects.
+ It includes configurations for signing, testing, quality checks, security, documentation, and performance.
+ Usage:
+ - Place this file in the root of your library project.
+ - Customize properties as needed for your specific project requirements.
+-->
 <Project>
 
   <!-- Import Specialized Directory Targets -->
@@ -26,6 +34,7 @@
   </Target>
 
   <Target Name="ValidateConfiguration" BeforeTargets="Build">
+    
     <!-- Validate required properties -->
     <Error Text="TargetFramework must be specified" Condition="'$(TargetFramework)' == '' AND '$(TargetFrameworks)' == ''" />
     <Error Text="Configuration must be specified" Condition="'$(Configuration)' == ''" />

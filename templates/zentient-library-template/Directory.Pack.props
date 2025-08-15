@@ -1,7 +1,16 @@
+<!--
+Zentient.Library Template - Directory.Pack.props
+This file defines common properties for Zentient library projects related to NuGet packaging.
+It includes configurations for package metadata, versioning, and build settings.
+Usage:
+- Place this file in the root of your library project.
+- Customize properties as needed for your specific project requirements.
+-->
 <Project>
 
   <!-- NuGet Package Configuration -->
   <PropertyGroup Condition="'$(IsPackable)' == 'true'">
+
     <!-- Package metadata -->
     <PackageId Condition="'$(PackageId)' == ''">$(AssemblyName)</PackageId>
     <PackageVersion Condition="'$(PackageVersion)' == ''">$(Version)</PackageVersion>
@@ -131,6 +140,7 @@
 
   <!-- Package Metadata Enhancement -->
   <PropertyGroup Condition="'$(IsPackable)' == 'true'">
+
     <!-- Enhanced metadata for discoverability -->
     <PackageType Condition="'$(PackageType)' == ''">Dependency</PackageType>
     <RepositoryBranch Condition="'$(RepositoryBranch)' == ''">main</RepositoryBranch>

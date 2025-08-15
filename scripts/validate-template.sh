@@ -5,15 +5,17 @@
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
-# Enable verbose debugging of the script itself
-set -x
-
 # --- Configuration and Environment Setup ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 TEMP_DIR="/tmp/template-validation"
 LOG_FILE=""
 TEMPLATE_DIR=""
+
+LOG_FILE=""
+TEMPLATE_DIR=""
+
+mkdir -p "$TEMP_DIR"
 
 # --- Color and Logging Functions ---
 red() { echo -e "\033[31m$1\033[0m"; }
@@ -181,18 +183,15 @@ validate_functional_metadata() {
 
     cd "$project_path"
 
-    # --- NEW FIX: Replace incorrect project names in the solution file ---
+    # --- FIX: Patch incorrect project names in the solution file ---
     step "Patching solution file for correct project paths..."
-    # Replace the default name "Zentient.NewLibrary" with "TestProject"
-    # The solution file is also likely named incorrectly, but this will handle the file paths
-    # The correct replacement name will be derived from the --name argument
-    # We use sed to replace the incorrect project paths
-    # Note: The project path name has to be escaped for sed.
-    local old_name_src="Zentient.NewLibrary.csproj"
-    local old_name_test="Zentient.NewLibrary.Tests.csproj"
+    # The template generates projects with the name 'Zentient.LibraryTemplate', not 'Zentient.NewLibrary'.
+    local old_name_src="Zentient.LibraryTemplate.csproj"
+    local old_name_test="Zentient.LibraryTemplate.Tests.csproj"
     local new_name_src="TestProject.csproj"
     local new_name_test="TestProject.Tests.csproj"
-
+    
+    # We use sed to replace the incorrect project paths
     sed -i "s/$old_name_src/$new_name_src/g" "TestProject.sln"
     sed -i "s/$old_name_test/$new_name_test/g" "TestProject.sln"
 
@@ -215,35 +214,35 @@ validate_functional_metadata() {
 
     test_result 0 "Project restore"
 
-    # Validate package can be created with a dry run
-    info "Validating NuGet package creation..."
-    local pack_log="$TEST_DIR/pack-output.log"
+    # --- Final FIX: Use dotnet publish and allow it to build the project ---
+    # `dotnet publish` will now perform a full build and validation, which is what is needed.
+    info "Validating project with 'dotnet publish'..."
     
-    # NEW FIX: Explicitly specify PackageDescription to resolve the MSB4019 error.
-    if ! dotnet pack --no-build --verbosity normal -p:PackageDescription="Test project description for validation" > "$pack_log" 2>&1; then
-        test_result 1 "Package validation failed (dotnet pack exited with error)"
-        cat "$pack_log"
+    local publish_log="$TEST_DIR/publish-output.log"
+    # Remove the --no-build flag to allow the command to build the project first.
+    if ! dotnet publish "src/TestProject.csproj" -c Release > "$publish_log" 2>&1; then
+        test_result 1 "Project validation failed (dotnet publish exited with error)"
+        cat "$publish_log"
         return 1
     fi
-
+    
     # Check for validation errors in the log file
-    if grep -q "error" "$pack_log"; then
-        test_result 1 "Package validation failed (errors found in log)"
-        cat "$pack_log"
+    if grep -q "error" "$publish_log"; then
+        test_result 1 "Project validation failed (errors found in log)"
+        cat "$publish_log"
         return 1
     fi
     
     # Check for template placeholders in the log file
-    if grep -q "LIBRARY_\|PROJECT_\|REPOSITORY_URL" "$pack_log"; then
-        test_result 1 "Template placeholders found in package metadata"
-        grep "LIBRARY_\|PROJECT_\|REPOSITORY_URL" "$pack_log"
+    if grep -q "LIBRARY_\|PROJECT_\|REPOSITORY_URL" "$publish_log"; then
+        test_result 1 "Template placeholders found in published metadata"
+        grep "LIBRARY_\|PROJECT_\|REPOSITORY_URL" "$publish_log"
         return 1
     fi
 
-    test_result 0 "NuGet metadata validation"
+    test_result 0 "Project validation with publish"
     success "Template '$TEMPLATE_SHORT_NAME' validation successful"
 }
-
 # The 'generate_report' function is the same as before.
 generate_report() {
     step "Generating test report..."

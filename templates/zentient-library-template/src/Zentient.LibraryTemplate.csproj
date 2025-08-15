@@ -12,12 +12,23 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
 
-    <!-- Assembly Properties -->
+    <!-- Assembly and Package Properties - Replaced by dotnet new -->
     <AssemblyTitle>Zentient Library Template</AssemblyTitle>
     <AssemblyDescription>LIBRARY_DESCRIPTION</AssemblyDescription>
     <AssemblyProduct>Zentient Framework</AssemblyProduct>
     <AssemblyCompany>LIBRARY_COMPANY</AssemblyCompany>
     <AssemblyCopyright>LIBRARY_COPYRIGHT</AssemblyCopyright>
+    <Authors>LIBRARY_AUTHOR</Authors>
+    <Description>LIBRARY_DESCRIPTION</Description>
+
+    <!-- Project metadata -->
+    <Company>LIBRARY_COMPANY</Company>
+    <Authors>LIBRARY_AUTHOR</Authors>
+    <Copyright>LIBRARY_COPYRIGHT</Copyright>
+    <Description>LIBRARY_DESCRIPTION</Description>
+
+    <!-- Repository information -->
+    <RepositoryUrl>REPOSITORY_URL</RepositoryUrl>
 
     <!-- NuGet Package Properties -->
     <IsPackable>true</IsPackable>
@@ -34,8 +45,6 @@
 
     <!-- Documentation -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <!-- Remove explicit DocumentationFile path to avoid file lock issues -->
-    <!-- <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile> -->
 
     <!-- Build Configuration -->
     <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
@@ -44,25 +53,16 @@
 
     <!-- Code Analysis (relaxed for template) -->
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AnalysisLevel>latest</AnalysisLevel> 
+    <AnalysisLevel>latest</AnalysisLevel>
     <AnalysisMode>Default</AnalysisMode>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-
-    <!-- Assembly Metadata -->
-    <Authors>Ulf Bourelius</Authors>
-        <Description>A concise description of what your library does.</Description>
-
-    <!-- Disable strict style rules for template simplicity -->
-    <NoWarn>$(NoWarn);SA1200;SA1101;SA1633;SA1636;SA1609;RS0016;RS0037;SA1600;SA1649;SA1028;S1118;S1135;S125;RCS1102</NoWarn>
-
-    <!--<CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)..\analyzers\ZentientTemplate.ruleset</CodeAnalysisRuleSet>-->
 
     <!-- Suppress analyzer upgrade warning -->
     <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
   </PropertyGroup>
+
   <!-- Framework Dependencies -->
   <ItemGroup>
-    <!-- Core Zentient Abstractions -->
     <PackageReference Include="Zentient.Abstractions" Version="3.0.1" />
   </ItemGroup>
 

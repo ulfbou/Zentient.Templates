@@ -26,7 +26,7 @@
       "type": "parameter",
       "dataType": "string",
       "description": "The name of the library project",
-      "defaultValue": "Zentient.NewLibrary",
+      "defaultValue": "Zentient.LibraryTemplate",
       "replaces": "Zentient.LibraryTemplate"
     },
     "Framework": {
@@ -83,7 +83,7 @@
       "type": "parameter",
       "dataType": "string",
       "description": "Copyright information",
-      "defaultValue": "© Zentient. All rights reserved.",
+      "defaultValue": "© 2025 Zentient Framework Team. All rights reserved.",
       "replaces": "LIBRARY_COPYRIGHT"
     },
     "RepositoryUrl": {

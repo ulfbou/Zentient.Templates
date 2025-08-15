@@ -17,15 +17,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # The matrix now iterates over the template directories.
-        # Add new directories here for new templates.
         template-dir:
           - zentient-library-template
           # - zentient-project-template
         dotnet-version:
-          - '9.0.x'
-          # - '8.0.x'
           # - '6.0.x'
+          # - '7.0.x'
+          # - '8.0.x'
+          - '9.0.x'
 
     steps:
       - name: Checkout repository

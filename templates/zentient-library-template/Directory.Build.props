@@ -1,31 +1,34 @@
+<!--
+Zentient Library Template - Directory.Build.props
+This file defines common properties for Zentient library projects.
+It includes configurations for package metadata, versioning, and build settings.
+Usage:
+- Place this file in the root of your library project.
+- Customize properties as needed for your specific project requirements.
+-->
 <Project>
 
   <!-- Core Project Configuration -->
   <PropertyGroup>
     <!-- Project metadata -->
     <Product>Zentient Framework</Product>
-    <Company>LIBRARY_COMPANY</Company>
-    <Authors>LIBRARY_AUTHOR</Authors>
-    <Copyright>LIBRARY_COPYRIGHT</Copyright>
-    <Description>LIBRARY_DESCRIPTION</Description>
-    
+
     <!-- Repository information -->
-    <RepositoryUrl>REPOSITORY_URL</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryBranch>main</RepositoryBranch>
-    
+
     <!-- Build configuration -->
     <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <TargetFramework Condition="'$(TargetFramework)' == ''">net8.0</TargetFramework>
-    
+
     <!-- Language and framework settings -->
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
     <WarningsAsErrors />
     <WarningsNotAsErrors />
-    
+
     <!-- Assembly information -->
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <GenerateAssemblyTitleAttribute>true</GenerateAssemblyTitleAttribute>
@@ -33,16 +36,16 @@
     <GenerateAssemblyProductAttribute>true</GenerateAssemblyProductAttribute>
     <GenerateAssemblyCompanyAttribute>true</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyCopyrightAttribute>true</GenerateAssemblyCopyrightAttribute>
-    
+
     <!-- Output configuration -->
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
-    
+
     <!-- Package configuration -->
     <IsPackable Condition="'$(IsPackable)' == '' AND '$(OutputType)' == 'Library'">true</IsPackable>
     <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release' AND '$(IsPackable)' == 'true'">true</GeneratePackageOnBuild>
-    
+
     <!-- Feature flags for template -->
     <EnableSigning Condition="'$(EnableSigning)' == ''">true</EnableSigning>
     <EnableTesting Condition="'$(EnableTesting)' == ''">true</EnableTesting>
@@ -58,7 +61,7 @@
     <VersionSuffix Condition="'$(VersionSuffix)' == '' AND '$(Configuration)' == 'Debug'">dev</VersionSuffix>
     <Version Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</Version>
     <Version Condition="'$(Version)' == ''">$(VersionPrefix)</Version>
-    
+
     <AssemblyVersion>$(VersionPrefix).0</AssemblyVersion>
     <FileVersion>$(VersionPrefix).0</FileVersion>
     <InformationalVersion>$(Version)</InformationalVersion>
