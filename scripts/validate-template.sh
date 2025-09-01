@@ -8,7 +8,7 @@ set -e
 # --- Configuration and Environment Setup ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
-TEMP_DIR="/tmp/template-validation"
+TEMP_DIR="/f/misc/template-validation"
 LOG_FILE=""
 TEMPLATE_DIR=""
 

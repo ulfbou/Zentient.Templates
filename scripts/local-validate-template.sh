@@ -11,9 +11,14 @@ set -x
 # --- Configuration and Environment Setup ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
-TEMP_DIR="/c/misc/template-validation"
+TEMP_DIR="/f/misc/template-validation"
 LOG_FILE=""
 TEMPLATE_DIR=""
+
+# --- DELETE TEMP_DIR IF IT EXISTS ---
+if [[ -d "$TEMP_DIR" ]]; then
+    rm -rf "$TEMP_DIR"
+fi
 
 mkdir -p "$TEMP_DIR"
 
